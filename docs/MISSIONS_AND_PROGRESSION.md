@@ -17,16 +17,16 @@ Every mission must have: premise, giver, starting conditions, primary objective,
 4. Investigate the newly revealed breach and enter The Bloom.
 5. Collect three Lumen Pods, learning the pickup and inventory systems.
 6. Return through the portal to Dusty Junction.
-7. Return to Mara to collect the courier fee. Separately choose whether to sell the three pods raw for low risk or process them into one Glow Resin for a higher price and greater suspicion.
-8. Spend the proceeds or save toward the 40-credit storage upgrade. The optional rare specimen can make the upgrade affordable immediately.
+7. Return to Mara to collect the courier fee. Separately choose whether to sell the three pods raw for lower risk or process them into one Glow Resin for a higher gross value and greater suspicion risk.
+8. Spend the proceeds or save toward the 40-credit storage upgrade. The upgrade is affordable from the 25-credit courier fee plus 15 credits from selling three raw pods, before fees or penalties. The optional rare specimen is extra income, not a required shortcut.
 
 **Optional objectives:** retrieve a rare specimen from the nook; take the Drain Cut route; cooperate with Officer Vale if noticed; inspect the Pumpworks warning panel before entering The Bloom.
 
-**Reward and economy:** Mara pays 25 credits for completing the round-trip courier job. Three raw Lumen Pods sell for 15 credits total; processing them into one Glow Resin yields 24 credits gross. This makes the first 40-credit storage upgrade reachable after the job plus raw sales, before fees or penalties. Values are placeholders to tune in playtests, not guarantees of balance.
+**Reward and economy:** Mara pays 25 credits for completing the round-trip courier job. Three raw Lumen Pods sell for 15 credits total; processing them into one Glow Resin yields 24 credits gross. The storage upgrade costs 40 credits. These values are provisional and must be playtested; documentation arithmetic is not balance validation.
 
-**Failure recovery:** if the player abandons the case before delivery, Mara remains available and the job can be resumed or restarted. After the case is delivered, it remains at Pumpworks; do not require the player to carry it into The Bloom. If the player leaves before collecting the courier fee, Mara retains the reward. Do not delete collected resources or strand the player in a dimension.
+**Failure recovery:** if the player abandons the case before delivery, Mara remains available and the job can be resumed or restarted. After the case is delivered, it remains at Pumpworks; do not require the player to carry it into The Bloom. If the player leaves before collecting the courier fee, Mara retains the reward. The mission remains resumable; do not delete collected resources or strand the player in a dimension. Do not add a partial payout or abandonment penalty to the first slice.
 
-**State flags:** `accepted`, `case_collected`, `reached_pumpworks`, `case_delivered`, `portal_discovered`, `entered_bloom`, `pods_collected`, `returned`, `courier_fee_claimed`, `resource_sale_or_processing_complete`, `mission_complete`, `optional_specimen_found`.
+**State flags:** use the stable stage/flag definitions in [First-Slice Data and Rule Registry](FIRST_SLICE_DATA_REGISTRY.md) as the proposed reference. Existing prose labels such as `accepted`, `case_collected`, `reached_pumpworks`, `case_delivered`, `portal_discovered`, `entered_bloom`, `pods_collected`, `returned`, `courier_fee_claimed`, `resource_sale_or_processing_complete`, `mission_complete`, and `optional_specimen_found` describe state concepts; exact implementation IDs remain subject to engine/data-model review.
 
 **System coverage:** dialogue, vehicle, interaction, portal, resource nodes, inventory, economy, suspicion, save/load.
 
