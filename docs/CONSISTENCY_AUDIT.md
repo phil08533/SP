@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-18
 **Branch:** `preproduction/space-hippie-blueprint`
-**Scope:** Cross-check opening mission, economy, world layout, and production gates. This is a documentation audit, not a game test.
+**Scope:** Cross-check opening mission, economy, crime boundaries, world layout, and production gates. This is a documentation audit, not a game test.
 
 ## Findings resolved
 
@@ -25,6 +25,11 @@
 **Issue:** The first mission did not clearly say what happens if the player leaves after delivering the case but before completing the resource run.
 
 **Resolution:** The mission remains active and resumable. The full 25-credit courier fee is claimed from Mara after the player returns from The Bloom. There is no partial payout or abandonment penalty in the first slice. This keeps the rule simple and avoids a softlock.
+
+### 5. Required portal discovery versus trespass
+**Issue:** The player must discover and enter the portal during the opening loop, while Pumpworks is a restricted site.
+
+**Resolution:** The courier may legally reach the public-facing service drop. The inner portal boundary is clearly marked restricted. Crossing it can trigger a warning/tutorial beat, but enforcement must not block the required portal interaction or strand the player. Later trespass can carry a fine.
 
 ## Remaining open items
 
