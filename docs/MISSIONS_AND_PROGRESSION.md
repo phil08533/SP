@@ -5,13 +5,29 @@ Every mission must have: premise, giver, starting conditions, primary objective,
 
 ## First mission — A Small Favor
 **Purpose:** teach driving, navigation, interaction, portal discovery, gathering, inventory, risk, sale/crafting, and spending in a single connected arc.
+
 **Giver:** Mara Venn.
-**Premise:** move a sealed service case to Pumpworks. It reacts to the portal.
-**Primary path:** accept case → drive to gate → discover the breach → enter The Bloom → collect three Lumen Pods → return → deliver pods or process/sell → collect reward.
-**Optional:** retrieve a rare specimen from the nook; take the Drain Cut route; cooperate with Officer Vale if noticed.
-**Reward:** enough combined job/resource income to approach the first 40-credit storage upgrade; tune after playtest.
-**Failure recovery:** if player abandons the case or leaves the area, Mara remains available; the objective can be restarted or resumed. Do not delete collected resources or strand the player in a dimension.
-**State flags:** accepted, reached_pumpworks, portal_discovered, entered_bloom, pods_collected, returned, sale_or_processing_complete, mission_complete, optional_specimen_found.
+
+**Premise:** Mara hires the player to deliver a sealed service case containing an ordinary pump component to the Pumpworks gate. The case is not contraband. When the player delivers it, the equipment reacts to an anomalous energy signature and reveals the portal chamber.
+
+**Primary path:**
+1. Accept the courier job from Mara and take the sealed case.
+2. Drive to Pumpworks using the main road or the optional rough shortcut.
+3. Deliver the case to the marked utility drop point; this completes the outbound delivery objective.
+4. Investigate the newly revealed breach and enter The Bloom.
+5. Collect three Lumen Pods, learning the pickup and inventory systems.
+6. Return through the portal to Dusty Junction.
+7. Return to Mara to collect the courier fee. Separately choose whether to sell the three pods raw for low risk or process them into one Glow Resin for a higher price and greater suspicion.
+8. Spend the proceeds or save toward the 40-credit storage upgrade. The optional rare specimen can make the upgrade affordable immediately.
+
+**Optional objectives:** retrieve a rare specimen from the nook; take the Drain Cut route; cooperate with Officer Vale if noticed; inspect the Pumpworks warning panel before entering The Bloom.
+
+**Reward and economy:** Mara pays 25 credits for completing the round-trip courier job. Three raw Lumen Pods sell for 15 credits total; processing them into one Glow Resin yields 24 credits gross. This makes the first 40-credit storage upgrade reachable after the job plus raw sales, before fees or penalties. Values are placeholders to tune in playtests, not guarantees of balance.
+
+**Failure recovery:** if the player abandons the case before delivery, Mara remains available and the job can be resumed or restarted. After the case is delivered, it remains at Pumpworks; do not require the player to carry it into The Bloom. If the player leaves before collecting the courier fee, Mara retains the reward. Do not delete collected resources or strand the player in a dimension.
+
+**State flags:** `accepted`, `case_collected`, `reached_pumpworks`, `case_delivered`, `portal_discovered`, `entered_bloom`, `pods_collected`, `returned`, `courier_fee_claimed`, `resource_sale_or_processing_complete`, `mission_complete`, `optional_specimen_found`.
+
 **System coverage:** dialogue, vehicle, interaction, portal, resource nodes, inventory, economy, suspicion, save/load.
 
 ## Follow-up missions (backlog, not first-slice commitments)
@@ -33,10 +49,13 @@ Finch asks the player to visit three locations when the relay mast emits a repea
 ## Progression tiers
 ### Tier 0 — New Arrival
 Basic vehicle, tiny inventory, hideout storage, one contact. Access to legal odd jobs and first portal.
+
 ### Tier 1 — Known Face
 Earned through completing first mission and one optional job. Unlock storage crate, basic repairs, and a second buyer.
+
 ### Tier 2 — Trusted Operator
 Earned through repeated jobs and one meaningful relationship. Unlock specialized collection tool and a rough-route vehicle upgrade.
+
 ### Tier 3 — Local Power
 Future release tier: larger hideout capacity, multiple supply contacts, more complex jobs and reputation tradeoffs. Not required for the first slice.
 
@@ -46,6 +65,7 @@ Future release tier: larger hideout capacity, multiple supply contacts, more com
 - **Suspension kit:** opens rough trails and improves vehicle recovery.
 - **Portal scanner:** gives advance warning of hazard timing.
 - **Workbench upgrade:** improves fictional processing yield or reduces station time.
+
 Each upgrade changes an available action, route, risk, or visible environment; avoid upgrades that only add tiny percentage bonuses.
 
 ## Mission state and anti-softlock rules
