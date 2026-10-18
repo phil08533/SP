@@ -26,6 +26,19 @@
 19. [Claude Execution Playbook](docs/CLAUDE_EXECUTION_PLAYBOOK.md)
 20. [Claude Code Starting Prompt](docs/CLAUDE_START_PROMPT.md)
 
+## Visual maps
+- [Dusty Junction SVG map](docs/assets/dusty-junction-map.svg)
+- [The Bloom SVG map](docs/assets/the-bloom-map.svg)
+
+## Local diagnostic tool
+`tools/engine-readiness-check.sh` is a read-only Linux system report for the later engine trial. It does not install packages or change system settings. When ready, run it from the repository with:
+
+```bash
+bash tools/engine-readiness-check.sh
+```
+
+Review its output before sharing it; it can report hardware and software details.
+
 ## Status
 Pre-production only. Engine is not selected. Unreal Engine 5 is the first candidate to validate; Godot 4 is the fallback if the real Linux setup/build workflow makes Unreal too cumbersome. This is a test plan, not a final engine decision.
 
