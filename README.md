@@ -19,11 +19,12 @@
 12. [Initial Asset Catalog](docs/ASSET_CATALOG.md)
 13. [Technical Decision Log](docs/TECHNICAL_DECISIONS.md)
 14. [Engine Decision Matrix](docs/ENGINE_DECISION_MATRIX.md)
-15. [Consistency Audit](docs/CONSISTENCY_AUDIT.md)
-16. [Roadmap and Acceptance Tests](docs/ROADMAP_TESTING.md)
-17. [Claude Code Instructions](CLAUDE.md)
-18. [Claude Execution Playbook](docs/CLAUDE_EXECUTION_PLAYBOOK.md)
-19. [Claude Code Starting Prompt](docs/CLAUDE_START_PROMPT.md)
+15. [First-Slice Dependency and Build Order](docs/FIRST_SLICE_DEPENDENCIES.md)
+16. [Consistency Audit](docs/CONSISTENCY_AUDIT.md)
+17. [Roadmap and Acceptance Tests](docs/ROADMAP_TESTING.md)
+18. [Claude Code Instructions](CLAUDE.md)
+19. [Claude Execution Playbook](docs/CLAUDE_EXECUTION_PLAYBOOK.md)
+20. [Claude Code Starting Prompt](docs/CLAUDE_START_PROMPT.md)
 
 ## Status
 Pre-production only. Engine is not selected. Unreal Engine 5 is the first candidate to validate; Godot 4 is the fallback if the real Linux setup/build workflow makes Unreal too cumbersome. This is a test plan, not a final engine decision.
