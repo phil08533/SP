@@ -56,7 +56,7 @@
 - Verify engine support and iteration workflow on the actual Linux setup. No local machine test has been performed.
 - Confirm exact dimensions and travel times through greyboxing rather than treating map estimates as final.
 - Finalize controller bindings during the engine trial.
-- Decide whether early return with fewer than three pods should allow mission completion or keep the resource objective active; preserve the courier reward rule independently of this choice.
+- Keep early-return behavior explicit in implementation: after returning to town, the courier fee may be claimed once if the case was delivered; the three-pod resource objective remains active until complete.
 - Define witness distance/visibility and suspicion cooldown before implementing crime response.
 - Establish exact save format, autosave policy, and whether suspicion persists across sessions after engine selection.
 - Playtest the opening economy and adjust prices if the storage upgrade feels automatic or too far away.
