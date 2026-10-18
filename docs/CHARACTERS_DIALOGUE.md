@@ -62,17 +62,20 @@ Faded lab jacket, sample jars used as pen cups, diagrams on receipts. Precise ab
 Keep faction state as a few reputation bands and flags, not a giant branching morality tree.
 
 ## Opening mission: “A Small Favor”
-Trigger: approach Mara's Garage after leaving the hideout.
+**Trigger:** approach Mara's Garage after leaving the hideout.
 
 Mara: “You looking for work, or did that car stop on its own?”
+
 Choices:
 1. “Work, if it pays.” → “Good. There's a sealed case needs moving to the old Pumpworks gate. Don't open it. Don't leave it in the sun. Don't ask why it ticks.”
 2. “What's wrong with the town?” → “Depends who you ask. The council says budget. The diner says weather. I say somebody built a door where a wall used to be.”
 3. “I can fix my own car.” → “Then you won't mind if I charge you for the tools you break.”
 
-At Pumpworks, the case indicator pulses in sync with the portal. Finch calls from the fence: “That's the wrong kind of ticking. That one is counting down to a place.”
+At Pumpworks, the player places the sealed case at the marked utility drop point. The case remains there; the player never has to carry it into The Bloom. Its indicator begins pulsing in sync with an anomalous energy signature, revealing the portal chamber. Finch calls from the fence: “That's the wrong kind of ticking. That one is counting down to a place.”
 
-The player can deliver the case for a small legal reward or investigate the portal and discover the resource route. Leaving early must not soft-lock the mission.
+The player investigates the breach, enters The Bloom, collects three Lumen Pods, and returns through the portal. The courier fee is claimed from Mara on return. The pods are a separate resource activity: the player can sell them raw for lower value or process them into Glow Resin for higher value and increased suspicion. This distinction keeps the ordinary service delivery separate from the risky resource economy.
+
+If the player leaves before finishing, the objective remains resumable. The case, collected items, and mission state must not be lost, and the portal must never strand the player.
 
 ## Dialogue state rules
 Use bark pools with cooldowns. Named dialogue responds to mission and relationship state. Subtitles are required. Do not gate mission completion on a single hidden line or one NPC being at a precise schedule location.
