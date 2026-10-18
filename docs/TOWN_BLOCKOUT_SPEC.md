@@ -3,6 +3,10 @@
 **Status:** Proposed implementation brief; not authorization to create the engine project.
 **Purpose:** Remove ambiguity so an AI coding assistant can build a coherent, testable first district without inventing a sprawling open world.
 
+## Visual reference
+
+![Dusty Junction visual greybox map](assets/dusty-junction-map.svg)
+
 ## Player experience target
 
 The player should be able to leave the hideout, recognize the main road and key landmarks, reach Mara's garage, drive to Pumpworks, and return without a map. The town should feel like a compact, odd roadside community, not a generic city grid. Every major landmark needs a distinct silhouette and a gameplay reason to exist.
