@@ -20,6 +20,8 @@ Stack-based container with stable IDs, stack limits, base values, category, desc
 ## 5. Fictional processing and economy
 Abstract crafting UI only; no real-world manufacturing steps. First recipe: 3 Lumen Pods → 1 Glow Resin. Raw pods are legal/low-risk and less profitable; Glow Resin has higher value but increases suspicion if carried openly near witnesses.
 
+**First-slice location rule:** the first processing interaction happens at the hideout workbench. The trade counter is a buyer, not a crafting station. The player brings collected pods home, chooses raw sale or processing, then takes the resulting goods to a buyer. Carrying Glow Resin through town creates the intended risk window; processing itself does not trigger suspicion. A future public processing station is possible but not part of the first slice.
+
 Provisional balance values, to be tested:
 - Basic courier job: 25 credits.
 - Lumen Pod raw sale: 5 credits.
@@ -27,7 +29,8 @@ Provisional balance values, to be tested:
 - Storage crate upgrade: 40 credits.
 - Basic vehicle repair: 15 credits.
 - Optional rare specimen: 20 credits to research buyer.
-Values are placeholders; playtest whether the first upgrade is reachable after one loop plus a small optional activity.
+
+Values are placeholders; playtest whether the first upgrade is reachable after one loop plus a small optional activity. The basic courier fee plus sale of three raw pods equals 40 credits before penalties or fees. Processing yields 49 credits total before any processing costs or penalties.
 
 ## 6. Crime, witnesses, and enforcement
 First-slice categories: trespass at restricted Pumpworks and exposure of restricted fictional cargo. Later candidates: theft, assault. Suspicion states: Clear → Noticed → Investigating → Resolved. Detection needs plausible range, line of sight, awareness, and an evidence event unless a scripted exception is documented. Witnesses can report after a delay; no omniscient global alert.
@@ -67,4 +70,5 @@ Set numeric frame-time budgets after benchmarking on the actual development PC. 
 - Vehicle upgrades open rough routes, not only speed.
 - Hideout upgrades change storage/processing.
 - Save/load restores a consistent snapshot.
+
 Systems communicate through documented interfaces/events; avoid directly mutating another system's private state.
