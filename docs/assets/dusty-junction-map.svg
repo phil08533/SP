@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="760" viewBox="0 0 1100 760" role="img" aria-labelledby="title desc">
+<title id="title">Dusty Junction first-slice town schematic</title>
+<desc id="desc">Top-down schematic map showing Motel Row and hideout, Main Drag, Mara's Garage, Lucky Comet Diner, trade counter, scrap verge, Dry Wash Overlook, Old Relay Mast, Pumpworks gate, utility yard and portal chamber. Main road, rough shortcut and pedestrian cut are distinguished.</desc>
+<defs>
+  <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#34475a" stroke-width="1" opacity=".24"/></pattern>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#07111b" flood-opacity=".25"/></filter>
+  <style>
+    .heading{font:700 27px system-ui,sans-serif;fill:#f4eee0;letter-spacing:.5px}
+    .sub{font:14px system-ui,sans-serif;fill:#b7c2c9}
+    .label{font:700 16px system-ui,sans-serif;fill:#f8f4e9}
+    .small{font:12px system-ui,sans-serif;fill:#d3d9dc}
+    .tiny{font:11px system-ui,sans-serif;fill:#b8c5cd}
+    .node{stroke:#e8ddc6;stroke-opacity:.55;stroke-width:1.5;filter:url(#shadow)}
+    .road{fill:none;stroke:#b9a98b;stroke-width:19;stroke-linecap:round;stroke-linejoin:round}
+    .roadline{fill:none;stroke:#f3e3b9;stroke-width:2;stroke-dasharray:12 12;stroke-linecap:round;opacity:.7}
+    .trail{fill:none;stroke:#b8b4a0;stroke-width:5;stroke-dasharray:9 9;stroke-linecap:round}
+    .foot{fill:none;stroke:#72d3c0;stroke-width:4;stroke-dasharray:3 9;stroke-linecap:round}
+  </style>
+</defs>
+<rect width="1100" height="760" rx="20" fill="#101c2a"/>
+<rect width="1100" height="760" rx="20" fill="url(#grid)"/>
+<text x="42" y="48" class="heading">DUSTY JUNCTION</text>
+<text x="42" y="72" class="sub">FIRST-SLICE GREYBOX MAP · NORTH UP · SCHEMATIC, NOT TO SCALE</text>
+<g transform="translate(1015 45)"><path d="M0 30V0M0 0L-7 11M0 0L7 11" stroke="#e8ddc6" stroke-width="2.5" fill="none"/><text x="0" y="-9" text-anchor="middle" class="label">N</text></g>
+
+<!-- roads -->
+<path class="road" d="M140 332 C250 325 330 325 445 332 S680 335 812 335 L910 335 L910 490 L800 575"/>
+<path class="roadline" d="M140 332 C250 325 330 325 445 332 S680 335 812 335 L910 335 L910 490 L800 575"/>
+<path class="road" d="M445 332 L445 455 L625 455 L760 490"/>
+<path class="roadline" d="M445 332 L445 455 L625 455 L760 490"/>
+<path class="trail" d="M225 440 C265 390 300 365 350 335 S430 250 490 225"/>
+<path class="trail" d="M210 490 C260 525 305 540 360 550 S435 535 445 455"/>
+<path class="foot" d="M350 385 C370 415 400 430 445 455 L625 455 L760 490"/>
+<path class="foot" d="M910 490 L910 570"/>
+
+<!-- terrain labels -->
+<text x="270" y="286" class="tiny">BACK TRAIL · ROUGH SHORTCUT</text>
+<text x="445" y="425" class="tiny" text-anchor="middle">MAIN DRAG</text>
+<text x="495" y="510" class="tiny" text-anchor="middle">DRAIN CUT · PEDESTRIAN</text>
+<text x="805" y="610" class="tiny" text-anchor="middle">UTILITY LOOP ROAD</text>
+
+<!-- nodes -->
+<g class="node">
+  <rect x="80" y="125" width="190" height="92" rx="14" fill="#465a62"/>
+  <text x="175" y="158" text-anchor="middle" class="label">DRY WASH</text><text x="175" y="179" text-anchor="middle" class="label">OVERLOOK</text><text x="175" y="201" text-anchor="middle" class="small">Scenic edge / optional find</text>
+  <rect x="350" y="120" width="190" height="92" rx="14" fill="#394b59"/>
+  <text x="445" y="156" text-anchor="middle" class="label">OLD RELAY MAST</text><text x="445" y="180" text-anchor="middle" class="small">Skyline landmark</text><text x="445" y="199" text-anchor="middle" class="small">Later radio mystery</text>
+  <rect x="80" y="250" width="190" height="92" rx="14" fill="#66564a"/>
+  <text x="175" y="285" text-anchor="middle" class="label">SCRAP VERGE</text><text x="175" y="309" text-anchor="middle" class="small">Salvage / rough path</text><text x="175" y="327" text-anchor="middle" class="small">Cover and shortcuts</text>
+  <rect x="80" y="390" width="230" height="112" rx="14" fill="#3d686a"/>
+  <text x="195" y="423" text-anchor="middle" class="label">MOTEL ROW</text><text x="195" y="445" text-anchor="middle" class="label">+ HIDEOUT</text><text x="195" y="470" text-anchor="middle" class="small">Save · storage · workbench</text><text x="195" y="488" text-anchor="middle" class="small">Start and safe return point</text>
+  <rect x="345" y="250" width="200" height="70" rx="14" fill="#79664f"/>
+  <text x="445" y="279" text-anchor="middle" class="label">MAIN DRAG</text><text x="445" y="300" text-anchor="middle" class="small">Primary navigation spine</text>
+  <rect x="330" y="365" width="230" height="82" rx="14" fill="#8b5d50"/>
+  <text x="445" y="397" text-anchor="middle" class="label">MARA'S GARAGE</text><text x="445" y="421" text-anchor="middle" class="small">Vehicle / repairs / first job</text>
+  <rect x="600" y="250" width="220" height="70" rx="14" fill="#78674b"/>
+  <text x="710" y="279" text-anchor="middle" class="label">LUCKY COMET DINER</text><text x="710" y="300" text-anchor="middle" class="small">Gossip / local radio</text>
+  <rect x="590" y="365" width="220" height="82" rx="14" fill="#6a5a6c"/>
+  <text x="700" y="397" text-anchor="middle" class="label">TRADE COUNTER</text><text x="700" y="421" text-anchor="middle" class="small">Sell raw pods / Glow Resin</text>
+  <rect x="805" y="390" width="190" height="92" rx="14" fill="#625d4a"/>
+  <text x="900" y="423" text-anchor="middle" class="label">PUMPWORKS</text><text x="900" y="445" text-anchor="middle" class="label">GATE + YARD</text><text x="900" y="466" text-anchor="middle" class="small">Case drop / restricted site</text>
+  <rect x="820" y="520" width="170" height="90" rx="14" fill="#9a624b"/>
+  <text x="905" y="551" text-anchor="middle" class="label">PORTAL</text><text x="905" y="572" text-anchor="middle" class="label">CHAMBER</text><text x="905" y="592" text-anchor="middle" class="small">Entry to The Bloom</text>
+</g>
+
+<!-- legend -->
+<rect x="42" y="650" width="1016" height="72" rx="14" fill="#1a2a3a" stroke="#3a4e60"/>
+<text x="64" y="678" class="label">ROUTE KEY</text>
+<path d="M175 675H245" class="road"/><path d="M175 675H245" class="roadline"/><text x="260" y="680" class="small">Main road / easiest route</text>
+<path d="M465 675H525" class="trail"/><text x="540" y="680" class="small">Rough vehicle shortcut</text>
+<path d="M755 675H815" class="foot"/><text x="830" y="680" class="small">Pedestrian cut</text>
+<text x="64" y="704" class="tiny">Keep buildings compact; all critical destinations need two navigation cues. Exact distances are set by playtesting.</text>
+</svg>
