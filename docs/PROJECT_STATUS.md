@@ -54,8 +54,8 @@ The owner has asked for autonomous progress where possible. This authorizes cont
 
 ## Highest-value next work
 
-1. Validate CSV syntax and the README's links.
-2. Finish remaining design choices that need owner input, especially whether an early return with fewer than three pods leaves the resource objective active.
+1. CSV syntax has been parsed and validated; the newly added README-linked files, maps, and diagnostic script were fetched successfully from the working branch. The rest of the README links still need a complete sweep.
+2. The early-return edge case is now specified: courier payout is earned independently after case delivery and return; the resource objective remains resumable until three pods are collected.
 3. Run the read-only Linux diagnostic and inspect results before choosing an engine trial route.
 4. Present one concise engine recommendation when the machine-specific evidence is available.
 
