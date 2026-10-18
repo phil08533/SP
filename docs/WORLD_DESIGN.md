@@ -4,6 +4,9 @@
 Dusty Junction is a compact hand-authored hub built around a failed freight stop and a municipal pumping station. Provisional blockout target: 450–650 m across; 3–5 minutes on foot across the main activity loop and 1–2 minutes by vehicle. These are test targets, not promises. Use a readable loop with shortcuts rather than a maze.
 
 ## Town blockout (schematic; north at top)
+
+![Dusty Junction visual greybox map](assets/dusty-junction-map.svg)
+
 ```text
                          N
        [Dry Wash Overlook]----[Old Relay Mast]
@@ -45,6 +48,9 @@ Every important destination has at least two navigation cues: silhouette, color,
 A pocket ecosystem around a mineral fracture. Palette: indigo/petrol shadows, mint and acid-lime bioluminescence, amber mineral cores, restrained coral accents. Do not make everything neon; negative space creates wonder.
 
 ### Dimension map
+
+![The Bloom visual dimension map](assets/the-bloom-map.svg)
+
 ```text
                  [Rare Specimen Nook]
                           |
