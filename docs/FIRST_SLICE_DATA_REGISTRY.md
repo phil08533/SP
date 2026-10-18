@@ -44,7 +44,7 @@ Mission ID: `mission.a_small_favor`
 | `stage.purchase_upgrade` | At least 40 credits and upgrade not owned | Buy storage upgrade | Currency deducted and upgrade applied once | Failed purchase changes nothing |
 | `stage.complete` | Required objectives complete | Confirm completion | Mission completed | Save/load retains completion |
 
-The mission can remain resumable if the player leaves before finishing. The player must not be stranded or lose collected resources. Whether a player returning with fewer than three pods may claim the courier fee should follow the currently specified rule: the courier job's full fee is claimed after return; collecting pods is a separate part of the first-session progression loop. Do not add a partial payout or abandonment penalty to this slice.
+The courier fee is tied to delivering the sealed case and returning to Dusty Junction, not to the number of pods collected. If the player returns with fewer than three pods, Mara can pay the full 25-credit courier fee once; the resource objective remains active and resumable until three pods have been collected. The player may re-enter The Bloom to finish it. This separates payment for the courier job from the optional timing of resource collection. Do not add a partial payout or abandonment penalty to this slice.
 
 ## 4. Crime and witness event IDs
 
