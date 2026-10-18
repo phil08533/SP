@@ -22,11 +22,11 @@ Dusty Junction is a compact hand-authored hub built around a failed freight stop
 ```
 
 ## Districts and landmarks
-- **Motel Row / Hideout:** converted service room behind a failing motel office. Bed, battered fridge, storage crate, wall map, upgradeable bench. Sun-faded turquoise and violet vacancy sign. Hub for saving, storage, processing, leads.
+- **Motel Row / Hideout:** converted service room behind a failing motel office. Bed, battered fridge, storage crate, wall map, upgradeable workbench. Sun-faded turquoise and violet vacancy sign. Hub for saving, storage, processing, leads, and safe preparation.
 - **Main Drag:** uneven pavement, utility poles, cable bundles, retro-future storefronts. Distinct rooflines and signage; no repeated box-building row.
 - **Mara's Garage:** two bays, lift, mismatched panels, parts cage, hand-painted service board. Vehicle tutorial and upgrade contact.
 - **Lucky Comet Diner:** curved canopy, checkerboard accents, humming drink dispenser, local radio and gossip.
-- **Pawn / Trade Counter:** buys ordinary goods and salvage; legal low-risk outlet and environmental storytelling wall.
+- **Pawn / Trade Counter:** buys ordinary goods, raw Lumen Pods, Glow Resin, and salvage; legal low-risk outlet for basic items, with a buyer's sign and environmental storytelling wall. It does not process items in the first slice.
 - **Scrap Verge:** compact junkyard with walkable elevated path, cover, salvage and shortcut; not a maze.
 - **Pumpworks:** fenced municipal utility property, maintenance sheds, cylindrical portal chamber, warning signs, scorch marks, impossible shadows.
 - **Dry Wash Overlook:** quiet edge-of-map vista and optional collectible location.
