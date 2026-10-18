@@ -2,6 +2,8 @@
 
 This is a production-planning list, not an instruction to generate everything immediately. Build greybox first, then approve a tiny visual anchor set.
 
+**Tracking:** Use [Asset Manifest (CSV)](ASSET_MANIFEST.csv) to track each candidate's stable ID, source/provenance, rights, technical requirements, and review state. The catalog describes what may be needed; it is not a request to generate every listed asset.
+
 ## Style anchor set — required before scale-up
 1. **ENV_Town_Garage_A:** Mara's two-bay garage exterior with one readable sign and repair clutter.
 2. **CHR_MaraVenn:** full-body stylized character with clear silhouette and one interaction idle.
@@ -35,12 +37,12 @@ This is a production-planning list, not an instruction to generate everything im
 - ground/path tiles with controlled variation.
 
 ## Character list by priority
-**Slice:** player, Mara Venn, Finch Rill, Officer Imani Vale, one ambient resident.  
-**Near-term:** Jo Sable, Rook Calder, Tamsin Pike, Bex and Boro.  
+**Slice:** player, Mara Venn, Officer Imani Vale, and at most one ambient resident for the initial slice. Finch Rill is a near-term candidate only if the approved mission needs him.  
+**Near-term:** Finch Rill, Jo Sable, Rook Calder, Tamsin Pike, Bex and Boro.  
 **Later:** Dr. Sera Quill (can initially appear via notes/audio), Nell-7, Quiet Customer.
 
 ## Vehicle and prop priority
-Slice vehicle: one compact road car. Props: sealed case, resource basket, simple processing bench, sale terminal/counter, patrol marker or officer interaction point, repair tool set, survey tag.
+Slice vehicle: one compact road car. Required props: sealed case, processing bench, trade counter, storage crate, warning sign, portal brace/return arch, Lumen Pod resource. Resource basket, patrol marker, repair tool set, and survey tag are candidates only if they communicate required gameplay or help the player read the scene.
 
 ## Asset metadata record
 Every imported asset should have:
