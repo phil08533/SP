@@ -14,6 +14,15 @@
 ## Scoring model
 Weighting proposal: artistic quality/iteration 25%; Linux compatibility/performance 20%; C++ and Claude Code workflow 20%; console feasibility 20%; solo-developer productivity/maintenance 15%. Score each candidate 1–5 only after evidence is collected. Record confidence and blockers; do not turn guesses into measured scores.
 
+## Official documentation checked
+This is an initial documentation review, not a completed hands-on validation. Verify the version-specific pages again when selecting an engine.
+- Epic, [Linux Development Quickstart](https://dev.epicgames.com/documentation/unreal-engine/linux-development-quickstart-for-unreal-engine): Linux setup, installed/source builds, C++ project setup and build workflow.
+- Epic, [Linux Development Requirements](https://dev.epicgames.com/documentation/unreal-engine/linux-development-requirements-for-unreal-engine): current published toolchain and hardware recommendations. The published UE 5.7–5.8 table specifies Ubuntu 22.04/Rocky Linux 8, clang 20.1.8 and NVIDIA driver 570+ for the listed Vulkan configuration; confirm the exact engine version and distro before installing.
+- Epic, [Install Unreal Engine](https://dev.epicgames.com/documentation/unreal-engine/install-unreal-engine): notes that console development/packaging requires an engine source build rather than only a precompiled Launcher build. Platform access and approval remain separate requirements.
+- Godot, [C++ with godot-cpp](https://docs.godotengine.org/en/stable/tutorials/scripting/cpp/): official C++ bindings use GDExtension and do not require recompiling the engine for the usual extension workflow.
+- Godot, [The .gdextension file](https://docs.godotengine.org/en/stable/engine_details/engine_api/gdextension/gdextension_file.html): extension configuration and library loading.
+- Godot, [Consoles](https://docs.godotengine.org/en/stable/tutorials/platform/consoles.html): current guidance on console support and the need to investigate platform-specific porting routes.
+
 ## Unreal Engine 5 questions
 - Does the current supported Linux toolchain work on the actual distribution and GPU driver?
 - Can a small C++ project compile and launch without an unreasonable setup burden?
@@ -31,7 +40,7 @@ Potential strengths: integrated 3D editor, C++ gameplay framework, visual script
 - What console porting partners exist, what do they cost, and what support do they provide?
 - Can data and scenes remain maintainable under AI-assisted editing?
 
-Potential strengths: lightweight editor, open-source engine, straightforward project structure. Risks: custom work for integrated 3D workflows, C++ extension boundary, and less direct console publishing route.
+Potential strengths: lightweight editor, open-source engine, straightforward project structure. Risks: custom work for integrated 3D workflows, C++ extension boundary, and less direct console publishing route. C++-first does not mean every script must be C++; test whether native extension boundaries help or slow iteration.
 
 ## Bounded validation experiment (only after authorization)
 Use disposable test projects, not the production game. Demonstrate:
