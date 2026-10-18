@@ -31,7 +31,7 @@ Dusty Junction is a compact hand-authored hub built around a failed freight stop
 - **Lucky Comet Diner:** curved canopy, checkerboard accents, humming drink dispenser, local radio and gossip.
 - **Pawn / Trade Counter:** buys ordinary goods, raw Lumen Pods, Glow Resin, and salvage; legal low-risk outlet for basic items, with a buyer's sign and environmental storytelling wall. It does not process items in the first slice.
 - **Scrap Verge:** compact junkyard with walkable elevated path, cover, salvage and shortcut; not a maze.
-- **Pumpworks:** fenced municipal utility property, maintenance sheds, cylindrical portal chamber, warning signs, scorch marks, impossible shadows.
+- **Pumpworks:** fenced municipal utility property, maintenance sheds, cylindrical portal chamber, warning signs, scorch marks, impossible shadows. The courier may reach the public-facing service drop legally; the inner portal boundary is clearly marked restricted. Crossing it can trigger suspicion, but the first warning must not block the tutorial portal path.
 - **Dry Wash Overlook:** quiet edge-of-map vista and optional collectible location.
 - **Old Relay Mast:** recognizable skyline marker and source of later radio mystery.
 
