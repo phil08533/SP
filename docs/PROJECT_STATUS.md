@@ -10,12 +10,13 @@
 ## What exists
 
 - Core game concept, pillars, first-session arc, and bounded first playable scope.
-- Dusty Junction town design and The Bloom dimension.
-- Character roster, dialogue direction, mission/progression, portal, economy, crime/suspicion, and save/load concepts.
-- Art direction, asset catalog, concept-art briefs, and provenance expectations.
-- Technical decision log and engine-validation plan.
-- Measurable town blockout specification.
-- Engine decision matrix and Claude execution playbook.
+- Dusty Junction town design and The Bloom dimension, with a measurable greybox blockout brief.
+- Character roster and dialogue, mission/progression, portal, economy, crime/suspicion, save/load, and interaction concepts.
+- Art direction, concept-art briefs, initial asset catalog, and asset provenance expectations.
+- Technical decision log, engine decision matrix, engine trial protocol, and staged roadmap.
+- Claude Code project rules, autonomous execution playbook, and copyable starting prompt.
+- Consistency audit that corrected the opening courier/resource loop, economy arithmetic, processing location, and mission resumption rules.
+- README's 19 linked project documents were individually fetched successfully from the working branch.
 
 ## Current recommendation
 
@@ -23,12 +24,20 @@ Test Unreal Engine 5 first, with Godot 4 as a fallback. This is not yet a produc
 
 ## Current approval boundary
 
-The owner has asked for autonomous progress where possible. This authorizes continued planning, documentation, research, and reversible pre-production work. It does **not** silently approve a production engine, production gameplay code, bulk final assets, system changes, or a larger game scope. Those should be presented as one concise recommendation when evidence is ready.
+The owner has asked for autonomous progress where possible. This authorizes continued planning, documentation, research, consistency checks, and reversible pre-production work. It does **not** silently approve a production engine, production gameplay code, bulk final assets, system changes, or a larger game scope. Those should be presented as one concise recommendation when evidence is ready.
+
+## Completed this session
+
+1. Added an engine decision matrix with explicit evidence requirements instead of invented numeric scores.
+2. Added a town greybox specification with routes, landmark requirements, scale targets, and acceptance checks.
+3. Added Claude's execution playbook and a copyable starting prompt.
+4. Audited the opening mission and made the sealed-case delivery, portal discovery, resource loop, processing location, and first-upgrade math consistent.
+5. Updated the README and draft PR description to index the new material.
 
 ## Highest-value next work
 
-1. Cross-check the documents for contradictory names, systems, and scope.
-2. Complete a requirements and asset dependency list for the first slice.
+1. Finish a broader consistency pass across progression, crime, save/load, and asset requirements.
+2. Complete a first-slice dependency list so implementation order is unambiguous.
 3. Prepare a tiny engine trial with identical acceptance criteria for Unreal and Godot.
 4. Verify the actual Linux distribution, driver, disk space, and compiler before recommending an install path.
 5. Present a short owner-facing decision brief with a recommended default and the few remaining risks.
