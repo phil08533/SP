@@ -14,9 +14,10 @@
 - Character roster and dialogue, mission/progression, portal, economy, crime/suspicion, save/load, and interaction concepts.
 - Art direction, concept-art briefs, initial asset catalog, and asset provenance expectations.
 - Technical decision log, engine decision matrix, engine trial protocol, and staged roadmap.
+- First-slice dependency/build order with milestone acceptance criteria.
 - Claude Code project rules, autonomous execution playbook, and copyable starting prompt.
 - Consistency audit that corrected the opening courier/resource loop, economy arithmetic, processing location, and mission resumption rules.
-- README's 19 linked project documents were individually fetched successfully from the working branch.
+- All 20 documents linked from the README were individually fetched successfully from the working branch.
 
 ## Current recommendation
 
@@ -28,19 +29,19 @@ The owner has asked for autonomous progress where possible. This authorizes cont
 
 ## Completed this session
 
-1. Added an engine decision matrix with explicit evidence requirements instead of invented numeric scores.
+1. Added an engine decision matrix with evidence requirements instead of invented numeric scores.
 2. Added a town greybox specification with routes, landmark requirements, scale targets, and acceptance checks.
 3. Added Claude's execution playbook and a copyable starting prompt.
-4. Audited the opening mission and made the sealed-case delivery, portal discovery, resource loop, processing location, and first-upgrade math consistent.
-5. Updated the README and draft PR description to index the new material.
+4. Audited the opening mission and made the sealed-case delivery, portal discovery, resource loop, processing location, mission resumption, and first-upgrade math consistent.
+5. Added a dependency-aware first-slice build order with acceptance criteria for each milestone.
+6. Updated the README and draft PR description to index the new material.
 
 ## Highest-value next work
 
 1. Finish a broader consistency pass across progression, crime, save/load, and asset requirements.
-2. Complete a first-slice dependency list so implementation order is unambiguous.
-3. Prepare a tiny engine trial with identical acceptance criteria for Unreal and Godot.
-4. Verify the actual Linux distribution, driver, disk space, and compiler before recommending an install path.
-5. Present a short owner-facing decision brief with a recommended default and the few remaining risks.
+2. Prepare the exact disposable engine trial and plain-language decision report.
+3. Verify the actual Linux distribution, driver, disk space, and compiler before recommending an install path.
+4. Present a short owner-facing decision brief with a recommended default and the few remaining risks.
 
 ## Risks still open
 
