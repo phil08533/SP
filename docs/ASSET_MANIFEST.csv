@@ -35,7 +35,7 @@ UI_Inventory_A,Inventory and capacity UI,ui,high,greybox,not-started,,,,,,,,docs
 UI_TradeCraft_A,Trade and crafting UI,ui,high,greybox,not-started,,,,,,,,docs/SYSTEMS.md,"Show inputs, outputs, gross proceeds, fees and confirmation"
 UI_Suspicion_A,Suspicion and warning UI,ui,medium,greybox,not-started,,,,,,,,docs/PLAYER_FLOW_AND_UX.md,"Critical state not color-only"
 SND_Town_Ambience_A,audio,ambience,medium,greybox,not-started,,,,,,,,docs/ART_BIBLE_ASSET_PIPELINE.md,"Wind, cables, distant engines; must not mask dialogue"
-SND_Bloom_Ambience_A,The Bloom ambience,audio,ambience,medium,greybox,not-started,,,,,,,,docs/ART_BIBLE_ASSET_PIPELINE.md,"Glassy resonance, organic pulses, distinctive return tone"
+SND_Bloom_Ambience_A,The Bloom ambience,audio,ambience,medium,greybox,not-started,,,,,,,docs/ART_BIBLE_ASSET_PIPELINE.md,"Glassy resonance, organic pulses, distinctive return tone"
 SND_PortalTransition_A,Portal transition cue,audio,high,greybox,not-started,,,,,,,,docs/PORTALS_AND_DIMENSIONS.md,"Recognizable but restrained transition cue"
 ANIM_CharacterInteract_A,Character interaction animation,animation,medium,style-anchor,not-started,,,,,,,,docs/ART_BIBLE_ASSET_PIPELINE.md,"Only after rig and engine pipeline are tested"
 ANIM_VehicleEnterExit_A,Vehicle enter/exit,animation,medium,greybox,not-started,,,,,,,,docs/SYSTEMS.md,"Safe repeatable entry/exit; avoid duplicated or lost vehicle"
