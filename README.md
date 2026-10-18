@@ -10,10 +10,13 @@
 3. [World Design and Maps](docs/WORLD_DESIGN.md)
 4. [Characters and Dialogue](docs/CHARACTERS_DIALOGUE.md)
 5. [Gameplay Systems](docs/SYSTEMS.md)
-6. [Art Bible and Asset Pipeline](docs/ART_BIBLE_ASSET_PIPELINE.md)
-7. [Technical Decision Log](docs/TECHNICAL_DECISIONS.md)
-8. [Roadmap and Acceptance Tests](docs/ROADMAP_TESTING.md)
-9. [Claude Code Instructions](CLAUDE.md)
+6. [Missions and Progression](docs/MISSIONS_AND_PROGRESSION.md)
+7. [Portals and Dimensions](docs/PORTALS_AND_DIMENSIONS.md)
+8. [Art Bible and Asset Pipeline](docs/ART_BIBLE_ASSET_PIPELINE.md)
+9. [Initial Asset Catalog](docs/ASSET_CATALOG.md)
+10. [Technical Decision Log](docs/TECHNICAL_DECISIONS.md)
+11. [Roadmap and Acceptance Tests](docs/ROADMAP_TESTING.md)
+12. [Claude Code Instructions](CLAUDE.md)
 
 ## Status
 Pre-production only. Engine is not selected. PC/Linux is the first development target; PlayStation and Xbox are goals subject to access, porting, feasibility, and certification. No production code is authorized until the owner explicitly approves the technical direction and vertical-slice plan.
