@@ -10,7 +10,7 @@ Run from repository root:
 Each run writes separate GLBs under assets/3d/generated/<category>/.
 Seeds make a batch reproducible. Different seeds generate different batches.
 These are stylized low-poly first-pass models; inspect and curate before production.
-NPCs export as segmented mesh parts with a simple humanoid-compatible armature for later code-driven animation. Robot hard-surface forms remain angular; organic species use sculptural low-poly volumes.
+NPCs export as segmented mesh parts with a simple humanoid-compatible armature for later code-driven animation. Species profiles assign cached skin, shell, eye, claw, and marking materials; randomized geometry markings add variation without baking large texture maps. Robot hard-surface forms remain angular; organic species use sculptural low-poly volumes.
 """
 import bpy, math, os, random, argparse
 from mathutils import Vector
@@ -68,7 +68,16 @@ def mat(key):
     bsdf = m.node_tree.nodes.get("Principled BSDF")
     bsdf.inputs["Base Color"].default_value = color
     bsdf.inputs["Metallic"].default_value = 0.62 if key in ("ink","metal","steel") else 0.08
-    bsdf.inputs["Roughness"].default_value = 0.42 if key == "glass" else 0.72
+    # Shared PBR profiles keep material count small while making surfaces read differently.
+    roughness = {"glass":0.24,"metal":0.34,"steel":0.42,"ink":0.68,
+                 "skin_a":0.78,"skin_b":0.80,"skin_c":0.76,
+                 "alien_green":0.64,"alien_blue":0.42,"alien_purple":0.52,
+                 "alien_orange":0.66,"eye":0.22,"wood":0.86}.get(key, 0.68)
+    bsdf.inputs["Roughness"].default_value = roughness
+    if key in ("metal","steel"):
+        bsdf.inputs["Metallic"].default_value = 0.72
+    elif key in ("alien_blue","alien_purple"):
+        bsdf.inputs["Metallic"].default_value = 0.12
     if key in EMISSIVE:
         bsdf.inputs["Emission Color"].default_value = color
         bsdf.inputs["Emission Strength"].default_value = 2.4
@@ -672,12 +681,12 @@ def npc(i):
                 for n in range(eye_count):
                     x = (n-(eye_count-1)/2)*(.09 if eye_count==4 else .14)*s
                     z = (head_z+.07)*s if eye_count==4 and n<2 else (head_z-.025)*s if eye_count==4 else (head_z+.015)*s
-                    ico("Eye", (x,-.205*s,z), (.035*s,.025*s,.04*s), "eye" if human else random.choice(["eye","cyan"]))
+                    ico("Eye", (x,-.205*s,z), (.035*s,.025*s,.04*s), eye_mat if human else random.choice([eye_mat,"cyan"]))
             if species == "horned":
                 for side in (-1,1):
                     beam("Horn", (side*.14*s,0,(head_z+.10)*s),
                          (side*.27*s,.01*s,(head_z+.37)*s), .055*s, skin)
-                    ico("Horn_Tip", (side*.27*s,.01*s,(head_z+.37)*s), (.035*s,.035*s,.04*s), "cream")
+                    ico("Horn_Tip", (side*.27*s,.01*s,(head_z+.37)*s), (.035*s,.035*s,.04*s), claw_mat)
             elif species == "fin_head":
                 for side in (-1,1):
                     ico("Head_Fin", (side*.28*s,.015*s,head_z*s), (.15*s,.075*s,.22*s), skin)
@@ -701,18 +710,29 @@ def npc(i):
     if random.random() < .32 and species not in ("slug_traveler","hopper"):
         cube("Travel_Pack", (0,.23*s,1.13*s), (.31*s,.22*s,.39*s),
              random.choice(["rust","blue","ink"]), .035*s)
-    if alien and random.random() < .72:
-        ico("Bioluminescent_Mark", (0,-.235*s,1.22*s), (.045*s,.025*s,.12*s), trim)
+    if alien:
+        # Stable species identity with seed-driven individual variation in markings.
+        mark_count = random.randint(2,5)
+        for mark_i in range(mark_count):
+            side = random.choice([-1,1])
+            z = random.uniform(.91,1.39)*s
+            x = side*random.uniform(.12,.22)*s
+            if random.random() < .68:
+                ico("Skin_Marking", (x,-.222*s,z),
+                    (random.uniform(.025,.055)*s,.018*s,random.uniform(.035,.085)*s),
+                    npc_material("marking",trim))
+        if random.random() < .72:
+            ico("Bioluminescent_Mark", (0,-.235*s,1.22*s), (.045*s,.025*s,.12*s), trim)
     if species == "shellback":
         for side in (-1,1):
-            ico("Shell_Spike", (side*.28*s,.10*s,1.45*s), (.08*s,.10*s,.12*s), "cream")
+            ico("Shell_Spike", (side*.28*s,.10*s,1.45*s), (.08*s,.10*s,.12*s), claw_mat)
     elif species == "hopper":
         ico("Throat_Pouch", (0,-.20*s,1.08*s), (.15*s,.08*s,.17*s), trim)
         for side in (-1,1):
             beam("Long_Hind_Tendon", (side*.18*s,.08*s,.67*s), (side*.24*s,.08*s,.38*s), .025*s, skin)
     elif species == "brute":
         for side in (-1,1):
-            ico("Tusks", (side*.12*s,-.18*s,(head_z-.10)*s), (.045*s,.06*s,.09*s), "cream")
+            ico("Tusks", (side*.12*s,-.18*s,(head_z-.10)*s), (.045*s,.06*s,.09*s), claw_mat)
 
 BUILDERS={"buildings":building,"vehicles":vehicle,"street":street_prop,"npcs":npc}
 def main():
