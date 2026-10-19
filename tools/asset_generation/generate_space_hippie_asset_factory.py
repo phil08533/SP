@@ -190,7 +190,7 @@ def export(name, category):
         for poly in obj.data.polygons: poly.use_smooth=False
     folder=os.path.join(OUT_ROOT,category); os.makedirs(folder,exist_ok=True)
     path=os.path.join(folder,name+".glb")
-    bpy.ops.export_scene.gltf(filepath=path,export_format="GLB",use_selection=True,export_apply=True)
+    bpy.ops.export_scene.gltf(filepath=path,export_format="GLB",use_selection=True,export_apply=(category != "npcs"))
     print("Wrote",path)
 
 PAINTS=["teal","rust","blue","plum","yellow","cream"]
