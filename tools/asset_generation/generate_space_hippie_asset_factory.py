@@ -227,167 +227,335 @@ def street_prop(i):
         for x in (-.55,.55): cyl("Dock_Light",(x,0,.43),.12,.08,glow,8)
 
 def npc(i):
-    """Stylized static low-poly NPC. Species change silhouette, not just color."""
+    """Chunky low-poly NPCs with deliberately different anatomy and readable silhouettes."""
     species = random.choice([
-        "human", "human", "crystal_head", "wide_cranium", "horned",
-        "fin_head", "long_neck", "stocky", "tall_thin", "cyclops",
-        "four_eyed", "slug_traveler", "mantis", "robot", "service_droid"
+        "human", "human", "crystal_head", "wide_cranium", "horned", "fin_head",
+        "long_neck", "stocky", "tall_thin", "cyclops", "four_eyed", "slug_traveler",
+        "mantis", "robot", "service_droid", "shellback", "hopper", "sporehead",
+        "tube_neck", "orbital", "avian", "brute"
     ])
-    height = random.uniform(1.5, 2.08)
-    scale = height / 1.8
-    outfit = random.choice(PAINTS)
-    trim = random.choice(GLOWS)
+    height = random.uniform(1.55, 2.08)
+    s = height / 1.8
+    outfit, trim = random.choice(PAINTS), random.choice(GLOWS)
     human = species == "human"
     robot = species in ("robot", "service_droid")
     alien = not human and not robot
     skin = random.choice(["skin_a", "skin_b", "skin_c"]) if human else (
         "metal" if robot else random.choice(["alien_green", "alien_blue", "alien_purple", "alien_orange"])
     )
-
-    # Silhouette profiles: proportions are deliberately species-specific.
-    body_width, torso_height, head_width, head_height = .55, .68, .42, .38
-    leg_width, leg_spread = .095, .16
-    if species == "wide_cranium":
-        head_width, head_height = .68, .43
-    elif species == "horned":
-        head_width, head_height = .43, .36
-    elif species == "fin_head":
-        head_width, head_height = .46, .34
-    elif species == "long_neck":
-        head_width, head_height = .34, .31
-    elif species == "stocky":
-        body_width, torso_height, head_width, head_height = .76, .58, .45, .34
-        leg_width, leg_spread = .14, .24
-    elif species == "tall_thin":
-        body_width, torso_height, head_width, head_height = .39, .82, .35, .34
-        leg_width, leg_spread = .07, .12
-    elif species == "slug_traveler":
-        body_width, torso_height, head_width, head_height = .72, .48, .52, .3
-        leg_width, leg_spread = .14, .25
-    elif species == "mantis":
-        body_width, torso_height, head_width, head_height = .43, .72, .32, .4
-        leg_width, leg_spread = .065, .14
-    elif species in ("robot", "service_droid"):
-        head_width, head_height = (.46, .38) if species == "robot" else (.38, .46)
-
-    torso_z = 1.10 * scale
-    head_z = (1.61 if species != "long_neck" else 1.78) * scale
-    # Legs: stocky and slug-like species have wide stances; mantis has angular legs.
-    for side in (-1, 1):
-        x = side * leg_spread * scale
-        hip = (x, 0, .75 * scale)
-        foot = (x + side * random.uniform(0, .07) * scale, -.05, .12 * scale)
-        if species == "mantis":
-            knee = (x + side * .08 * scale, 0, .43 * scale)
-            beam("Digitigrade_Upper_Leg", hip, knee, leg_width * scale, outfit)
-            beam("Digitigrade_Lower_Leg", knee, foot, leg_width * .72 * scale, outfit)
-        else:
-            beam("Leg", hip, foot, leg_width * scale, outfit)
-        cube("Boot", (foot[0], foot[1]-.04, .07*scale),
-             (.22*scale, .34*scale, .13*scale), "ink", .025)
-
-    # Torso archetypes retain the screenshot's chunky, beveled toy-like style.
-    torso_dims = (body_width*scale, .34*scale, torso_height*scale)
-    cube("Torso", (0, 0, torso_z), torso_dims, outfit, .09*scale)
     garment = random.choice(["jacket", "coat", "armor", "tunic", "overalls", "merchant_apron", "patched_suit"])
-    if garment in ("coat", "tunic", "merchant_apron"):
-        cube("Lower_Garment", (0, .015, .76*scale),
-             (body_width*1.12*scale, .38*scale, .32*scale), outfit, .06*scale)
-    if garment == "armor":
-        cube("Chest_Plate", (0, -.19*scale, 1.18*scale), (.42*scale,.07*scale,.32*scale), "steel", .035)
-        cube("Chest_Light", (0, -.235*scale, 1.18*scale), (.16*scale,.025*scale,.06*scale), trim, .01)
-    elif garment in ("overalls", "merchant_apron"):
-        cube("Bib", (0, -.19*scale, 1.16*scale), (.34*scale,.06*scale,.34*scale),
-             "cream" if garment == "overalls" else random.choice(["rust","yellow","teal"]), .02)
-    elif garment == "patched_suit":
-        cube("Suit_Patch", (random.choice([-.13,.13])*scale, -.19*scale, 1.16*scale),
-             (.12*scale,.025*scale,.14*scale), random.choice(["cream","rust","yellow"]), .01)
 
-    # A long-neck species has a visible neck column between shoulders and head.
-    if species == "long_neck":
-        cyl("Long_Neck", (0, 0, 1.43*scale), .10*scale, .48*scale, skin, 7)
+    # Proportion presets alter the entire figure, not merely its head or paint.
+    body_w, torso_h, head_w, head_h = .55, .68, .42, .38
+    leg_w, stance, arm_w = .105, .17, .085
+    hip_z, shoulder_z, head_z = .76, 1.31, 1.61
+    leg_style, arm_style, torso_style = "human", "human", "jacket"
+    if species == "wide_cranium":
+        head_w, head_h, body_w = .72, .48, .52
+    elif species == "horned":
+        head_w, head_h, arm_w = .44, .37, .095
+    elif species == "fin_head":
+        head_w, head_h = .48, .36
+    elif species == "long_neck":
+        head_w, head_h, head_z = .34, .31, 1.78
+    elif species == "stocky":
+        body_w, torso_h, head_w, head_h, leg_w, stance = .76, .61, .45, .34, .15, .25
+    elif species == "tall_thin":
+        body_w, torso_h, head_w, head_h, leg_w, stance = .39, .82, .34, .34, .07, .12
+        hip_z, shoulder_z = .79, 1.38
+    elif species == "slug_traveler":
+        body_w, torso_h, head_w, head_h, leg_w, stance = .73, .49, .52, .30, .14, .25
+        torso_style, leg_style = "slug", "stump"
+    elif species == "mantis":
+        body_w, torso_h, head_w, head_h, leg_w, stance = .43, .72, .32, .40, .065, .15
+        leg_style, arm_style, torso_style = "digitigrade", "scythe", "carapace"
+    elif species == "robot":
+        head_w, head_h, body_w, torso_h = .46, .38, .54, .66
+        torso_style, leg_style, arm_style = "robot", "robot", "robot"
+    elif species == "service_droid":
+        head_w, head_h, body_w, torso_h = .38, .46, .48, .60
+        torso_style, leg_style, arm_style = "robot", "robot", "robot"
+    elif species == "shellback":
+        body_w, torso_h, head_w, head_h, leg_w, stance = .68, .58, .34, .31, .12, .23
+        torso_style, leg_style = "shell", "digitigrade"
+    elif species == "hopper":
+        body_w, torso_h, head_w, head_h, leg_w, stance = .43, .58, .40, .37, .11, .18
+        leg_style, torso_style = "spring", "pear"
+    elif species == "sporehead":
+        body_w, torso_h, head_w, head_h = .48, .60, .57, .47
+        torso_style = "pear"
+    elif species == "tube_neck":
+        body_w, torso_h, head_w, head_h, head_z = .50, .62, .31, .32, 1.88
+    elif species == "orbital":
+        body_w, torso_h, head_w, head_h, leg_w = .57, .70, .39, .37, .10
+        torso_style, leg_style = "robot", "robot"
+    elif species == "avian":
+        body_w, torso_h, head_w, head_h, leg_w, stance = .48, .62, .38, .34, .065, .16
+        leg_style, arm_style, torso_style = "bird", "wing", "feather"
+    elif species == "brute":
+        body_w, torso_h, head_w, head_h, leg_w, stance, arm_w = .82, .72, .43, .35, .16, .27, .14
+        torso_style = "barrel"
 
-    arm_radius = .09 * scale
+    # Legs are built as upper/lower segments with visible knee joints, ankle and shaped feet.
     for side in (-1, 1):
-        shoulder = (side*(body_width*.56)*scale, 0, 1.31*scale)
-        if species == "mantis":
-            elbow = (side*.48*scale, -.02, 1.20*scale)
-            hand = (side*.58*scale, -.10, 1.48*scale)
-            beam("Mantis_Arm", shoulder, elbow, arm_radius*.7, outfit)
-            beam("Hooked_Forearm", elbow, hand, arm_radius*.55, skin)
-            beam("Claw_Tip", hand, (hand[0]+side*.08, -.12, hand[2]+.10), .025*scale, skin)
+        x = side * stance * s
+        hip = (x, 0, hip_z*s)
+        if leg_style == "digitigrade":
+            knee = (x + side*.07*s, .015, .43*s)
+            ankle = (x - side*.015*s, -.015, .22*s)
+            beam("Thigh", hip, knee, leg_w*s*1.12, skin if species in ("mantis","shellback") else outfit)
+            ico("Knee_Joint", knee, (.105*s,.11*s,.10*s), skin)
+            beam("Shin", knee, ankle, leg_w*s*.68, outfit)
+            foot = (ankle[0]+side*.04*s, -.13*s, .10*s)
+        elif leg_style == "spring":
+            knee = (x + side*.08*s, .01, .39*s)
+            ankle = (x - side*.015*s, -.02, .19*s)
+            beam("Power_Thigh", hip, knee, leg_w*s*1.3, outfit)
+            ico("Spring_Knee", knee, (.13*s,.12*s,.12*s), skin)
+            beam("Long_Shin", knee, ankle, leg_w*s*.72, skin)
+            foot = (ankle[0], -.15*s, .08*s)
+        elif leg_style == "bird":
+            knee = (x + side*.015*s, 0, .48*s)
+            ankle = (x + side*.045*s, -.04, .19*s)
+            beam("Feathered_Thigh", hip, knee, leg_w*s*1.15, outfit)
+            ico("Knee", knee, (.09*s,.09*s,.09*s), skin)
+            beam("Bird_Shin", knee, ankle, leg_w*s*.55, skin)
+            foot = (ankle[0]+side*.03*s, -.19*s, .075*s)
+        elif leg_style == "stump":
+            knee = (x, 0, .39*s)
+            beam("Stumpy_Leg", hip, knee, leg_w*s*1.45, skin)
+            foot = (x, -.10*s, .12*s)
         else:
-            elbow = (side*random.uniform(.36,.48)*scale, -.015, random.uniform(.92,1.13)*scale)
-            hand = (elbow[0]+side*.025, -.04, elbow[2]-.20*scale)
-            beam("Upper_Arm", shoulder, elbow, arm_radius, outfit)
-            beam("Forearm", elbow, hand, .075*scale, outfit)
-            ico("Hand", hand, (.075*scale,.07*scale,.08*scale), skin)
-        if species == "stocky":
-            ico("Shoulder_Pad", (side*.39*scale, 0, 1.31*scale), (.16*scale,.20*scale,.16*scale), "steel")
+            knee = (x + side*.015*s, 0, .43*s)
+            ankle = (x + side*random.uniform(-.015,.035)*s, -.02, .17*s)
+            beam("Thigh", hip, knee, leg_w*s*1.18, outfit if not robot else "metal")
+            ico("Knee", knee, (.095*s,.10*s,.095*s), "steel" if robot else skin)
+            beam("Shin", knee, ankle, leg_w*s*.78, outfit if not robot else "metal")
+            foot = (ankle[0]+side*.025*s, -.12*s, .08*s)
 
-    # Head types: distinct geometry and facial layouts.
-    if robot:
-        cube("Robot_Head", (0,-.015,head_z), (head_width*scale,.36*scale,head_height*scale), "steel", .06)
-        if species == "service_droid":
-            cube("Droid_Faceplate", (0,-.215*scale,head_z), (.22*scale,.035*scale,.25*scale), "ink", .02)
-            for zoff in (-.06, .04, .12):
-                ico("Status_Light", (0,-.24*scale,head_z+zoff*scale), (.035*scale,.018*scale,.025*scale), trim)
-            cyl("Droid_Antenna", (.13*scale,0,head_z+.25*scale), .025*scale,.32*scale,trim,6)
+        if species == "avian":
+            # Three obvious toes make the feet read as bird-like, not boots.
+            ico("Bird_Foot", foot, (.105*s,.15*s,.055*s), skin)
+            for toe in (-1, 0, 1):
+                beam("Toe", (foot[0],foot[1]-.04*s,foot[2]),
+                     (foot[0]+toe*.075*s,foot[1]-.19*s,foot[2]-.015*s), .022*s, skin)
+        elif species in ("mantis","shellback"):
+            ico("Clawed_Foot", foot, (.13*s,.19*s,.065*s), skin)
+            beam("Toe_Claw", foot, (foot[0]+side*.04*s,foot[1]-.20*s,foot[2]-.015*s), .025*s, "ink")
         else:
-            cube("Robot_Visor", (0,-.205*scale,head_z), (.34*scale,.035*scale,.12*scale), trim, .02)
-            cyl("Antenna", (0,0,head_z+.27*scale), .025*scale,.25*scale,trim,6)
+            foot_dims = (.24,.35,.14) if species not in ("hopper","slug_traveler") else (.28,.38,.13)
+            cube("Boot" if not robot else "Metal_Foot",
+                 (foot[0],foot[1]-.025*s,max(.055*s,foot[2])),
+                 tuple(v*s for v in foot_dims), "ink" if not robot else "steel", .035*s)
+            if robot:
+                cube("Foot_Light", (foot[0],foot[1]-.20*s,foot[2]),
+                     (.10*s,.025*s,.035*s), trim, .008*s)
+
+    # Torso volume: different silhouettes and layered masses prevent the same-box-body look.
+    torso_z = 1.10*s
+    torso_dims = (body_w*s, .34*s, torso_h*s)
+    if torso_style == "slug":
+        ico("Soft_Mantle_Body", (0,.015*s,.94*s), (.43*s,.29*s,.38*s), skin)
+        cube("Traveler_Vest", (0,-.19*s,1.02*s), (.55*s,.08*s,.38*s), outfit, .06*s)
+    elif torso_style == "pear":
+        ico("Tapered_Abdomen", (0,0,.99*s), (body_w*.52*s,.25*s,.43*s), skin)
+        cube("Chest_Garment", (0,-.16*s,1.20*s), (body_w*.80*s,.10*s,.30*s), outfit, .045*s)
+    elif torso_style == "barrel":
+        ico("Barrel_Torso", (0,0,1.08*s), (.44*s,.27*s,.40*s), outfit)
+        cube("Shoulder_Mantle", (0,0,1.35*s), (.88*s,.40*s,.20*s), outfit, .07*s)
+    elif torso_style == "shell":
+        cube("Torso", (0,0,torso_z), torso_dims, outfit, .08*s)
+        ico("Domed_Shell", (0,.13*s,1.25*s), (.40*s,.20*s,.36*s), random.choice(["rust","teal","alien_green"]))
+        for side in (-1,1):
+            beam("Shell_Ridge", (side*.12*s,.01*s,1.48*s), (side*.24*s,.02*s,1.25*s), .025*s, "cream")
+    elif torso_style == "robot":
+        cube("Torso", (0,0,torso_z), torso_dims, "metal", .055*s)
+        cube("Abdominal_Block", (0,-.18*s,.91*s), (body_w*.62*s,.09*s,.24*s), "ink", .025*s)
+        cube("Core", (0,-.235*s,1.13*s), (.17*s,.035*s,.17*s), trim, .02*s)
+        cube("Collar", (0,0,1.43*s), (body_w*.76*s,.38*s,.10*s), "steel", .025*s)
     else:
-        if species == "slug_traveler":
-            ico("Slug_Mantle", (0,.015,head_z-.10*scale), (.36*scale,.29*scale,.24*scale), skin)
-            ico("Slug_Head", (0,-.02,head_z+.09*scale), (.24*scale,.22*scale,.22*scale), skin)
-            for side in (-1,1):
-                beam("Eye_Stalk", (side*.12*scale,0,head_z+.18*scale),
-                     (side*.19*scale,-.01,head_z+.38*scale), .035*scale, skin)
-                ico("Stalk_Eye", (side*.19*scale,-.04,head_z+.39*scale),
-                    (.055*scale,.045*scale,.055*scale), "eye")
+        cube("Torso", (0,0,torso_z), torso_dims, outfit, .075*s)
+        if torso_style == "carapace":
+            ico("Thorax_Plate", (0,-.17*s,1.18*s), (.24*s,.10*s,.30*s), skin)
+            cube("Abdomen_Plate", (0,.015*s,.91*s), (.33*s,.30*s,.30*s), skin, .06*s)
+        elif torso_style == "feather":
+            for row in range(3):
+                for side in (-1,1):
+                    ico("Feather_Plate", (side*(.10+row*.07)*s,-.19*s,(1.32-row*.13)*s),
+                        (.12*s,.035*s,.10*s), skin)
+        if garment in ("coat","tunic","merchant_apron"):
+            cube("Lower_Garment", (0,.015*s,.76*s),
+                 (body_w*1.12*s,.38*s,.32*s), outfit, .055*s)
+        if garment == "armor":
+            cube("Chest_Plate", (0,-.19*s,1.18*s), (.44*s,.075*s,.34*s), "steel", .035*s)
+            cube("Chest_Light", (0,-.235*s,1.18*s), (.16*s,.025*s,.06*s), trim, .01*s)
+        elif garment in ("overalls","merchant_apron"):
+            cube("Bib", (0,-.19*s,1.16*s), (.34*s,.06*s,.34*s),
+                 "cream" if garment=="overalls" else random.choice(["rust","yellow","teal"]), .02*s)
+        elif garment == "patched_suit":
+            cube("Suit_Patch", (random.choice([-.13,.13])*s,-.19*s,1.16*s),
+                 (.12*s,.025*s,.14*s), random.choice(["cream","rust","yellow"]), .01*s)
+
+    # Necks are visibly different, with collars or stacked segments where appropriate.
+    if species == "long_neck":
+        cyl("Long_Neck", (0,0,1.48*s), .105*s, .54*s, skin, 7)
+        cube("Neck_Collar", (0,-.01*s,1.26*s), (.28*s,.28*s,.09*s), "steel", .025*s)
+    elif species == "tube_neck":
+        for j in range(3):
+            cyl("Segmented_Neck", (0,0,(1.40+j*.13)*s), .075*s, .15*s, skin, 7)
+        ico("Neck_Gland", (0,-.065*s,1.47*s), (.09*s,.045*s,.07*s), trim)
+    else:
+        cyl("Neck", (0,0,1.43*s), .105*s, .16*s, skin if not robot else "steel", 7)
+
+    # Arms have shoulders, elbows, forearms and hands/claws; anatomy differs by species.
+    for side in (-1,1):
+        shoulder = (side*(body_w*.52)*s, 0, shoulder_z*s)
+        if arm_style == "scythe":
+            elbow = (side*.46*s,-.015*s,1.17*s)
+            wrist = (side*.58*s,-.09*s,1.29*s)
+            ico("Shoulder_Joint", shoulder, (.12*s,.12*s,.13*s), skin)
+            beam("Upper_Arm", shoulder, elbow, arm_w*s*.8, skin)
+            ico("Elbow_Joint", elbow, (.075*s,.075*s,.075*s), skin)
+            beam("Blade_Forearm", elbow, wrist, arm_w*s*.55, outfit)
+            beam("Hooked_Claw", wrist, (wrist[0]+side*.15*s,-.10*s,1.43*s), .035*s, skin)
+        elif arm_style == "wing":
+            elbow = (side*.49*s,-.015*s,1.18*s)
+            wrist = (side*.62*s,-.05*s,1.02*s)
+            beam("Wing_Upper", shoulder, elbow, arm_w*s*1.2, outfit)
+            ico("Wing_Joint", elbow, (.09*s,.10*s,.09*s), skin)
+            beam("Wing_Forearm", elbow, wrist, arm_w*s*.75, skin)
+            ico("Wing_Tip", wrist, (.07*s,.07*s,.08*s), skin)
+            for j in range(2):
+                beam("Wing_Feather", (wrist[0],wrist[1],wrist[2]+j*.04*s),
+                     (wrist[0]+side*.13*s,wrist[1]-.03*s,wrist[2]-.12*s+j*.03*s), .022*s, outfit)
         else:
-            shape = (2,1,1) if species == "wide_cranium" else (1,1,2) if species == "tall_thin" else (1,1,1)
-            ico("Head", (0,0,head_z), (head_width*.5*scale*shape[0], .22*scale, head_height*.5*scale*shape[2]), skin)
+            elbow_z = random.uniform(.94,1.12)*s
+            elbow = (side*random.uniform(.37,.48)*s,-.025*s,elbow_z)
+            wrist = (elbow[0]+side*.025*s,-.055*s,elbow[2]-.19*s)
+            shoulder_mat = "steel" if robot else (skin if species in ("shellback","brute") else outfit)
+            ico("Shoulder", shoulder, (.12*s,.13*s,.13*s), shoulder_mat)
+            beam("Upper_Arm", shoulder, elbow, arm_w*s*(1.25 if species=="brute" else 1), outfit if not robot else "steel")
+            ico("Elbow", elbow, (.075*s,.08*s,.075*s), "steel" if robot else skin)
+            beam("Forearm", elbow, wrist, arm_w*s*.82, outfit if not robot else "metal")
+            ico("Hand", wrist, (.085*s,.075*s,.09*s), "steel" if robot else skin)
+            if robot:
+                cube("Knuckle", (wrist[0],wrist[1]-.045*s,wrist[2]), (.11*s,.035*s,.07*s), trim, .01*s)
+            elif species == "brute":
+                for finger in (-1,0,1):
+                    beam("Finger", (wrist[0]+finger*.035*s,wrist[1]-.03*s,wrist[2]),
+                         (wrist[0]+finger*.045*s,wrist[1]-.11*s,wrist[2]-.035*s), .022*s, skin)
+        if species in ("stocky","brute"):
+            ico("Shoulder_Pad", (side*(body_w*.50)*s,-.01*s,shoulder_z*s),
+                (.17*s,.20*s,.17*s), "steel" if species=="stocky" else outfit)
+
+    # Head and face: all species have a different outline and/or eye arrangement.
+    if robot:
+        cube("Robot_Head", (0,-.015*s,head_z*s), (head_w*s,.36*s,head_h*s), "steel", .055*s)
+        if species == "service_droid":
+            cube("Droid_Faceplate", (0,-.215*s,head_z*s), (.23*s,.035*s,.26*s), "ink", .02*s)
+            for zoff in (-.06,.04,.12):
+                ico("Status_Light", (0,-.24*s,(head_z+zoff)*s), (.035*s,.018*s,.025*s), trim)
+            cyl("Droid_Antenna", (.13*s,0,(head_z+.25)*s), .025*s,.32*s,trim,6)
+            cube("Droid_Ear", (.24*s,0,head_z*s), (.07*s,.24*s,.16*s), "ink", .015*s)
+        else:
+            cube("Robot_Visor", (0,-.205*s,head_z*s), (.34*s,.035*s,.12*s), trim, .02*s)
+            cyl("Antenna", (0,0,(head_z+.27)*s), .025*s,.25*s,trim,6)
+            for side in (-1,1):
+                cube("Jaw_Hinge", (side*.20*s,-.18*s,(head_z-.10)*s), (.07*s,.05*s,.09*s), "ink", .01*s)
+    elif species == "slug_traveler":
+        ico("Slug_Mantle", (0,.015*s,(head_z-.10)*s), (.36*s,.29*s,.24*s), skin)
+        ico("Slug_Head", (0,-.02*s,(head_z+.09)*s), (.24*s,.22*s,.22*s), skin)
+        for side in (-1,1):
+            beam("Eye_Stalk", (side*.12*s,0,(head_z+.18)*s),
+                 (side*.19*s,-.01*s,(head_z+.38)*s), .035*s, skin)
+            ico("Stalk_Eye", (side*.19*s,-.04*s,(head_z+.39)*s), (.06*s,.045*s,.06*s), "eye")
+    else:
+        if species == "sporehead":
+            ico("Spore_Cap", (0,.015*s,(head_z+.10)*s), (.36*s,.26*s,.20*s), skin)
+            ico("Face", (0,-.02*s,head_z*s), (.21*s,.20*s,.20*s), skin)
+            for side in (-1,1):
+                ico("Spore", (side*.29*s,.02*s,(head_z+.16)*s), (.10*s,.10*s,.10*s), trim)
+        elif species == "orbital":
+            ico("Orb_Helmet", (0,0,head_z*s), (.25*s,.24*s,.25*s), "steel")
+            cube("Helmet_Visor", (0,-.22*s,head_z*s), (.30*s,.035*s,.12*s), trim, .025*s)
+            for side in (-1,1):
+                cyl("Helmet_Port", (side*.26*s,0,head_z*s), .055*s,.08*s, "ink", 8)
+        elif species == "avian":
+            ico("Bird_Head", (0,0,head_z*s), (.20*s,.20*s,.20*s), skin)
+            beam("Beak_Upper", (0,-.17*s,head_z*s), (0,-.34*s,(head_z-.03)*s), .06*s, "yellow")
+            beam("Beak_Lower", (0,-.17*s,(head_z-.04)*s), (0,-.30*s,(head_z-.09)*s), .035*s, "yellow")
+            for side in (-1,1):
+                ico("Eye", (side*.10*s,-.16*s,(head_z+.03)*s), (.035*s,.025*s,.04*s), "eye")
+                ico("Brow_Feather", (side*.14*s,.01*s,(head_z+.14)*s), (.12*s,.10*s,.07*s), skin)
+        else:
+            if species == "wide_cranium":
+                ico("Head", (0,0,head_z*s), (.36*s,.23*s,.24*s), skin)
+                ico("Jaw", (0,-.015*s,(head_z-.12)*s), (.20*s,.20*s,.13*s), skin)
+            elif species == "tall_thin":
+                ico("Head", (0,0,head_z*s), (.17*s,.18*s,.28*s), skin)
+            elif species == "crystal_head":
+                ico("Head", (0,0,head_z*s), (.23*s,.21*s,.22*s), skin)
+                ico("Crystal_Crown", (0,.015*s,(head_z+.20)*s), (.14*s,.13*s,.22*s), trim)
+                for side in (-1,1):
+                    ico("Temple_Crystal", (side*.21*s,0,head_z*s), (.08*s,.09*s,.14*s), trim)
+            elif species == "cyclops":
+                ico("Head", (0,0,head_z*s), (head_w*.5*s,.22*s,head_h*.5*s), skin)
+            else:
+                ico("Head", (0,0,head_z*s), (head_w*.5*s,.22*s,head_h*.5*s), skin)
             if human:
-                ico("Hair", (0,.035*scale,head_z+.12*scale), (.23*scale,.21*scale,.12*scale), random.choice(["ink","rust","cream"]))
+                ico("Hair", (0,.035*s,(head_z+.12)*s), (.23*s,.21*s,.12*s), random.choice(["ink","rust","cream"]))
+                # Ears, nose and chin give humans a less featureless toy-head read.
+                for side in (-1,1):
+                    ico("Ear", (side*.205*s,-.005*s,(head_z-.015)*s), (.045*s,.055*s,.07*s), skin)
+                ico("Nose", (0,-.218*s,(head_z-.015)*s), (.035*s,.035*s,.055*s), skin)
             if species == "cyclops":
-                ico("Single_Eye", (0,-.215*scale,head_z+.015*scale), (.085*scale,.03*scale,.085*scale), random.choice(["eye","cyan"]))
+                ico("Single_Eye", (0,-.218*s,head_z*s), (.095*s,.035*s,.095*s), random.choice(["eye","cyan"]))
             else:
                 eye_count = 4 if species == "four_eyed" else 2
                 for n in range(eye_count):
-                    x = (n-(eye_count-1)/2)*.09*scale
-                    ico("Eye", (x,-.205*scale,head_z+.02*scale),
-                        (.032*scale,.022*scale,.038*scale), "eye" if human else random.choice(["eye","cyan"]))
+                    x = (n-(eye_count-1)/2)*(.09 if eye_count==4 else .14)*s
+                    z = (head_z+.07)*s if eye_count==4 and n<2 else (head_z-.025)*s if eye_count==4 else (head_z+.015)*s
+                    ico("Eye", (x,-.205*s,z), (.035*s,.025*s,.04*s), "eye" if human else random.choice(["eye","cyan"]))
             if species == "horned":
                 for side in (-1,1):
-                    beam("Horn", (side*.13*scale,0,head_z+.10*scale),
-                         (side*.23*scale,0,head_z+.35*scale), .055*scale, skin)
+                    beam("Horn", (side*.14*s,0,(head_z+.10)*s),
+                         (side*.27*s,.01*s,(head_z+.37)*s), .055*s, skin)
+                    ico("Horn_Tip", (side*.27*s,.01*s,(head_z+.37)*s), (.035*s,.035*s,.04*s), "cream")
             elif species == "fin_head":
                 for side in (-1,1):
-                    ico("Head_Fin", (side*.27*scale,0,head_z), (.14*scale,.08*scale,.20*scale), skin)
-            elif species in ("crystal_head", "wide_cranium"):
-                ico("Forehead_Crystal", (0,-.22*scale,head_z+.08*scale), (.07*scale,.06*scale,.13*scale), trim)
+                    ico("Head_Fin", (side*.28*s,.015*s,head_z*s), (.15*s,.075*s,.22*s), skin)
+                    beam("Fin_Ridge", (side*.27*s,0,(head_z-.12)*s),
+                         (side*.31*s,0,(head_z+.13)*s), .018*s, trim)
             elif species == "tall_thin":
                 for side in (-1,1):
-                    beam("Crown_Antenna", (side*.08*scale,0,head_z+.14*scale),
-                         (side*.13*scale,0,head_z+.38*scale), .02*scale, skin)
+                    beam("Crown_Antenna", (side*.08*s,0,(head_z+.18)*s),
+                         (side*.13*s,0,(head_z+.43)*s), .022*s, skin)
             elif species == "mantis":
                 for side in (-1,1):
-                    beam("Mantis_Feeler", (side*.08*scale,0,head_z+.12*scale),
-                         (side*.18*scale,0,head_z+.38*scale), .025*scale, skin)
+                    beam("Mantis_Feeler", (side*.08*s,0,(head_z+.12)*s),
+                         (side*.18*s,0,(head_z+.39)*s), .025*s, skin)
+            elif species == "tube_neck":
+                ico("Sensory_Dome", (0,0,(head_z+.16)*s), (.14*s,.15*s,.13*s), trim)
 
-    # Wearable detail and silhouette-breaking accessories.
-    if random.random() < .58:
-        cube("Utility_Belt", (0,-.19*scale,.91*scale), (.48*scale,.055*scale,.09*scale), "ink", .015)
-    if random.random() < .35:
-        cube("Shoulder_Pad", (random.choice([-1,1])*.34*scale,-.01,1.31*scale),
-             (.2*scale,.26*scale,.16*scale), random.choice(["steel","cream",trim]), .03)
-    if random.random() < .28:
-        cube("Travel_Pack", (0,.22*scale,1.13*scale), (.30*scale,.22*scale,.38*scale),
-             random.choice(["rust","blue","ink"]), .035)
-    if alien and random.random() < .6:
-        ico("Bioluminescent_Mark", (0,-.235*scale,1.22*scale),
-            (.045*scale,.025*scale,.12*scale), trim)
+    # Silhouette-breaking details are chosen with archetype awareness.
+    if random.random() < .62:
+        cube("Utility_Belt", (0,-.19*s,.91*s), (.50*s,.06*s,.09*s), "ink", .015*s)
+        cube("Belt_Buckle", (0,-.23*s,.91*s), (.09*s,.025*s,.07*s), trim, .008*s)
+    if random.random() < .32 and species not in ("slug_traveler","hopper"):
+        cube("Travel_Pack", (0,.23*s,1.13*s), (.31*s,.22*s,.39*s),
+             random.choice(["rust","blue","ink"]), .035*s)
+    if alien and random.random() < .72:
+        ico("Bioluminescent_Mark", (0,-.235*s,1.22*s), (.045*s,.025*s,.12*s), trim)
+    if species == "shellback":
+        for side in (-1,1):
+            ico("Shell_Spike", (side*.28*s,.10*s,1.45*s), (.08*s,.10*s,.12*s), "cream")
+    elif species == "hopper":
+        ico("Throat_Pouch", (0,-.20*s,1.08*s), (.15*s,.08*s,.17*s), trim)
+        for side in (-1,1):
+            beam("Long_Hind_Tendon", (side*.18*s,.08*s,.67*s), (side*.24*s,.08*s,.38*s), .025*s, skin)
+    elif species == "brute":
+        for side in (-1,1):
+            ico("Tusks", (side*.12*s,-.18*s,(head_z-.10)*s), (.045*s,.06*s,.09*s), "cream")
 
 BUILDERS={"buildings":building,"vehicles":vehicle,"street":street_prop,"npcs":npc}
 def main():
