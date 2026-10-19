@@ -648,7 +648,8 @@ def npc(i):
         else:
             cyl("Neck", (0,0,1.43*s), .105*s, .16*s, skin if not robot else "steel", 7)
 
-    # Arms have shoulders, elbows, forearms and hands/claws; anatomy differs by species.
+    if not using_base_mesh:
+        # Arms have shoulders, elbows, forearms and hands/claws; anatomy differs by species.
         for side in (-1,1):
             shoulder = (side*(body_w*.52)*s, 0, shoulder_z*s)
             if arm_style == "scythe":
