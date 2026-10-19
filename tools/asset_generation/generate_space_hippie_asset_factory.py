@@ -118,6 +118,11 @@ def load_base_humanoid(species, target_height, skin, outfit, trim):
                 continue
             bpy.context.collection.objects.link(obj)
             obj.name = "BaseHumanoid_" + obj.name
+            # The source may already carry a rig; the factory applies its own unified NPC rig.
+            for modifier in list(obj.modifiers):
+                if modifier.type == "ARMATURE":
+                    obj.modifiers.remove(modifier)
+            obj.parent = None
             imported.append(obj)
         if not imported:
             print("Base Humanoid Mesh blend had no mesh objects; using procedural fallback")
@@ -630,16 +635,18 @@ def npc(i):
                      (.12*s,.025*s,.14*s), random.choice(["cream","rust","yellow"]), .01*s)
     
     
-    # Necks are visibly different, with collars or stacked segments where appropriate.
-    if species == "long_neck":
+    # The imported humanoid already includes its neck, so don't stack another one over it.
+    if not using_base_mesh:
+        # Necks are visibly different, with collars or stacked segments where appropriate.
+        if species == "long_neck":
         cyl("Long_Neck", (0,0,1.48*s), .105*s, .54*s, skin, 7)
         cube("Neck_Collar", (0,-.01*s,1.26*s), (.28*s,.28*s,.09*s), "steel", .025*s)
-    elif species == "tube_neck":
-        for j in range(3):
-            cyl("Segmented_Neck", (0,0,(1.40+j*.13)*s), .075*s, .15*s, skin, 7)
-        ico("Neck_Gland", (0,-.065*s,1.47*s), (.09*s,.045*s,.07*s), trim)
-    else:
-        cyl("Neck", (0,0,1.43*s), .105*s, .16*s, skin if not robot else "steel", 7)
+        elif species == "tube_neck":
+            for j in range(3):
+                cyl("Segmented_Neck", (0,0,(1.40+j*.13)*s), .075*s, .15*s, skin, 7)
+            ico("Neck_Gland", (0,-.065*s,1.47*s), (.09*s,.045*s,.07*s), trim)
+        else:
+            cyl("Neck", (0,0,1.43*s), .105*s, .16*s, skin if not robot else "steel", 7)
 
     if not using_base_mesh:
         # Arms have shoulders, elbows, forearms and hands/claws; anatomy differs by species.
