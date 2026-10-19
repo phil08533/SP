@@ -27,7 +27,7 @@ h1{font-size:18px;margin:0}small,.muted{color:var(--muted)}button,select,input[t
 <div class="topline"><span id="counter" class="muted">No asset selected</span><div><button id="prev">← Previous</button> <button id="next">Next →</button></div></div>
 <div id="viewer" class="viewer"><div class="empty">Choose an assets folder to load previews.</div></div>
 <div class="topline"><div><div id="title" class="assettitle">Welcome</div><div id="meta" class="meta"></div></div></div>
-<div class="actions"><button id="keep" class="keep">✓ Keep</button><button id="reject" class="reject">✕ Reject</button><button id="clear">Clear decision</button><button id="openraw">Open source text</button></div>
+<div class="actions"><button id="keep" class="keep">✓ Keep</button><button id="reject" class="reject">✕ Reject</button><button id="clear">Clear decision</button><button id="openraw">Open source text</button><label class="muted">Preview material variant <select id="materialVariant"><option value="original">Original</option><option value="ocean">Ocean</option><option value="desert">Desert</option><option value="biolume">Bioluminescent</option><option value="mono">Monochrome</option></select></label></div>
 <div class="codebox"><div class="codehead"><b id="codetitle">Source / details</b><span id="codebadge" class="badge">No source loaded</span></div><div id="codebody" class="codebody"><pre class="muted">For models, this area shows file details. For code files, it displays the source.</pre></div></div>
 <p class="hint">This is a local browser tool. It does not delete or modify assets. “Export decisions” downloads a JSON list of files marked keep/reject so you can curate them safely.</p>
 </main>
@@ -52,9 +52,37 @@ function clearModel(){if(!modelRoot)return;while(modelRoot.children.length){cons
 function showOverlay(content){if(!viewerOverlay){viewerOverlay=document.createElement('div');viewerOverlay.className='empty';viewerOverlay.style.zIndex='2';$('viewer').appendChild(viewerOverlay)}viewerOverlay.innerHTML=content;viewerOverlay.style.display='grid';if(renderer)renderer.domElement.style.display='none'}
 function hideOverlay(){if(viewerOverlay)viewerOverlay.style.display='none';if(renderer)renderer.domElement.style.display='block'}
 function frameModel(obj){const box=new THREE.Box3().setFromObject(obj),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());obj.position.sub(center);const max=Math.max(size.x,size.y,size.z)||1;camera.position.set(max*1.7,max*1.25,max*1.9);camera.near=max/1000;camera.far=max*100;camera.updateProjectionMatrix();controls.target.set(0,0,0);controls.update()}
+function applyMaterialVariant(variant){
+ if(!model)return;
+ const palettes={
+  ocean:{skin:0x328d9a,shell:0x176276,mark:0x64e8dc,eye:0x9efcff,cloth:0x243d57,metal:0x6a8994},
+  desert:{skin:0xc18455,shell:0x875137,mark:0xf4d06b,eye:0xffe6a3,cloth:0x57413a,metal:0x9d8b76},
+  biolume:{skin:0x4a7d61,shell:0x253e42,mark:0x70ffb3,eye:0x8afcff,cloth:0x28333b,metal:0x738b8b},
+  mono:{skin:0x9a9da3,shell:0x5e6268,mark:0xd8dbe0,eye:0xf2f2f2,cloth:0x45484d,metal:0x858a90}
+ };
+ const p=palettes[variant];
+ model.traverse(o=>{
+  if(!o.isMesh)return;
+  if(!o.userData.variantBase)o.userData.variantBase=(Array.isArray(o.material)?o.material:[o.material]).map(m=>m.clone());
+  const base=o.userData.variantBase;
+  const mats=base.map((original)=>{
+   const m=original.clone();
+   if(variant==='original')return m;
+   const n=((o.name||'')+' '+(original.name||'')).toLowerCase();
+   if(/eye|pupil|lens/.test(n)){m.color.setHex(p.eye);if(m.emissive)m.emissive.setHex(p.eye)}
+   else if(/mark|stripe|spot|glow|light|fin_ridge/.test(n)){m.color.setHex(p.mark);if(m.emissive)m.emissive.setHex(p.mark)}
+   else if(/shell|carapace|spike|horn|claw|plate/.test(n))m.color.setHex(p.shell);
+   else if(/skin|head|hand|palm|finger|toe|foot|torso|chest|abdomen|pelvis|thigh|shin|knee|elbow|neck/.test(n))m.color.setHex(p.skin);
+   else if(/metal|robot|droid|steel/.test(n))m.color.setHex(p.metal);
+   else if(/coat|jacket|garment|vest|apron|suit|sleeve|boot|shirt/.test(n))m.color.setHex(p.cloth);
+   return m;
+  });
+  o.material=Array.isArray(o.material)?mats:mats[0];
+ });
+}
 async function showFile(f){activeFile=f;const token=++loadToken;if(!scene)init3d();clearModel();const host=$('viewer');hideOverlay();$('title').textContent=f.name;$('meta').innerHTML='';const m=[path(f),kind(f).toUpperCase(),(f.size/1024).toFixed(1)+' KB'];m.forEach(t=>{let s=document.createElement('span');s.textContent=t;$('meta').appendChild(s)});$('counter').textContent=(index+1)+' / '+visible.length;$('keep').classList.toggle('active',decisions[path(f)]==='keep');$('reject').classList.toggle('active',decisions[path(f)]==='reject');$('codebody').innerHTML='';$('codetitle').textContent='Source / details';$('codebadge').textContent='Loading…';
 const k=kind(f);
-if(k==='3d'){host.style.display='block';hideOverlay();$('codebadge').textContent='3D model';$('codetitle').textContent='Model details';$('codebody').innerHTML='<pre>Loading 3D model…</pre>';new GLTFLoader().load(makeURL(f),g=>{if(token!==loadToken||activeFile!==f){g.scene.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){for(const m of (Array.isArray(o.material)?o.material:[o.material]))m.dispose()}});return}model=g.scene;modelRoot.add(model);frameModel(model);$('codebody').innerHTML='';const p=document.createElement('pre');let meshes=0,materials=new Set();model.traverse(o=>{if(o.isMesh){meshes++;(Array.isArray(o.material)?o.material:[o.material]).forEach(x=>materials.add(x.name||x.type))}});p.textContent='Meshes: '+meshes+'\nMaterials: '+[...materials].join(', ')+'\n\nRotate: drag · Zoom: scroll · Pan: right-drag';$('codebody').appendChild(p)},undefined,e=>{$('codebody').innerHTML='<pre>Could not preview this model. The file may be invalid or use an unsupported format.\n'+String(e.message||e)+'</pre>'})}
+if(k==='3d'){host.style.display='block';hideOverlay();$('codebadge').textContent='3D model';$('codetitle').textContent='Model details';$('codebody').innerHTML='<pre>Loading 3D model…</pre>';new GLTFLoader().load(makeURL(f),g=>{if(token!==loadToken||activeFile!==f){g.scene.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){for(const m of (Array.isArray(o.material)?o.material:[o.material]))m.dispose()}});return}model=g.scene;modelRoot.add(model);frameModel(model);applyMaterialVariant($('materialVariant').value);$('codebody').innerHTML='';const p=document.createElement('pre');let meshes=0,materials=new Set();model.traverse(o=>{if(o.isMesh){meshes++;(Array.isArray(o.material)?o.material:[o.material]).forEach(x=>materials.add(x.name||x.type))}});p.textContent='Meshes: '+meshes+'\nMaterials: '+[...materials].join(', ')+'\n\nRotate: drag · Zoom: scroll · Pan: right-drag';$('codebody').appendChild(p)},undefined,e=>{$('codebody').innerHTML='<pre>Could not preview this model. The file may be invalid or use an unsupported format.\n'+String(e.message||e)+'</pre>'})}
 else if(k==='images'){host.style.display='block';showOverlay('<img alt="" src="'+makeURL(f)+'" style="max-width:100%;max-height:100%;object-fit:contain">');$('codebadge').textContent='Image';$('codebody').innerHTML='<pre>'+path(f)+'\n'+f.type+'\n'+f.size+' bytes</pre>'}
 else if(k==='code'){host.style.display='none';$('codebadge').textContent='Editable text';$('codetitle').textContent=path(f);const ta=document.createElement('textarea');ta.spellcheck=false;ta.value=await f.text();ta.dataset.original=ta.value;$('codebody').appendChild(ta);const note=document.createElement('div');note.className='hint';note.style.padding='8px 12px';note.textContent='You can edit this text here and download a changed copy. The original file on disk is not changed.';$('codebody').appendChild(note);const save=document.createElement('button');save.textContent='Download edited copy';save.style.margin='8px 12px';save.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ta.value],{type:'text/plain'}));a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$('codebody').appendChild(save)}
 else{host.style.display='block';showOverlay('No built-in preview for this file type.<br>'+path(f));$('codebadge').textContent='File details';$('codebody').innerHTML='<pre>'+path(f)+'\n'+f.size+' bytes\n'+(f.type||'Unknown MIME type')+'</pre>'}
@@ -64,6 +92,7 @@ $('pick').onclick=()=>$('folder').click();$('folder').onchange=e=>{files=[...e.t
 ['type','status','search'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',()=>{index=0;activeFile=null;renderList()}));
 $('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);function move(d){if(!visible.length)return;index=(index+d+visible.length)%visible.length;activeFile=null;renderList();showFile(visible[index])}
 function decide(v){if(!activeFile)return;decisions[path(activeFile)]=v;renderList();$('keep').classList.toggle('active',v==='keep');$('reject').classList.toggle('active',v==='reject')}
+$('materialVariant').onchange=()=>applyMaterialVariant($('materialVariant').value);
 $('keep').onclick=()=>decide('keep');$('reject').onclick=()=>decide('reject');$('clear').onclick=()=>{if(activeFile)delete decisions[path(activeFile)];renderList();showFile(activeFile)};
 $('openraw').onclick=()=>{if(!activeFile)return;if(kind(activeFile)==='code')return;const stem=activeFile.name.replace(/\.[^.]+$/,'');const candidates=files.filter(f=>codeExt.has(ext(f))&&(f.name===stem+'.py'||f.name===stem+'.gd'||f.name===stem+'.js'||f.name===stem+'.ts'));if(candidates.length){const f=candidates[0];index=visible.indexOf(f);if(index<0){$('type').value='code';renderList();index=visible.indexOf(f)}showFile(f)}else{$('codebody').innerHTML='<pre>No obvious same-name source file found in the selected folder. Browse Code files to inspect scripts.</pre>'}};
 $('export').onclick=()=>{const out={project:'Space Hippie',folder:folderName,exportedAt:new Date().toISOString(),decisions:Object.entries(decisions).map(([file,decision])=>({file,decision})),kept:Object.keys(decisions).filter(k=>decisions[k]==='keep'),rejected:Object.keys(decisions).filter(k=>decisions[k]==='reject')};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));a.download='space-hippie-asset-decisions.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
