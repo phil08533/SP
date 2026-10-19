@@ -639,8 +639,8 @@ def npc(i):
     if not using_base_mesh:
         # Necks are visibly different, with collars or stacked segments where appropriate.
         if species == "long_neck":
-        cyl("Long_Neck", (0,0,1.48*s), .105*s, .54*s, skin, 7)
-        cube("Neck_Collar", (0,-.01*s,1.26*s), (.28*s,.28*s,.09*s), "steel", .025*s)
+            cyl("Long_Neck", (0,0,1.48*s), .105*s, .54*s, skin, 7)
+            cube("Neck_Collar", (0,-.01*s,1.26*s), (.28*s,.28*s,.09*s), "steel", .025*s)
         elif species == "tube_neck":
             for j in range(3):
                 cyl("Segmented_Neck", (0,0,(1.40+j*.13)*s), .075*s, .15*s, skin, 7)
@@ -648,8 +648,7 @@ def npc(i):
         else:
             cyl("Neck", (0,0,1.43*s), .105*s, .16*s, skin if not robot else "steel", 7)
 
-    if not using_base_mesh:
-        # Arms have shoulders, elbows, forearms and hands/claws; anatomy differs by species.
+    # Arms have shoulders, elbows, forearms and hands/claws; anatomy differs by species.
         for side in (-1,1):
             shoulder = (side*(body_w*.52)*s, 0, shoulder_z*s)
             if arm_style == "scythe":
