@@ -29,7 +29,9 @@ Categories:
 - `buildings`: varied building massing, window layouts, facade details, rooftop equipment, and accent lighting.
 - `vehicles`: civilian hovercars, taxis, cargo vehicles, patrol cars, scrap vehicles, and shuttles.
 - `street`: kiosks, vending machines, market stalls, benches, lamps, signs, barriers, vents, generators, antennas, trash/junk piles, charging pillars, bollards, crates, and drone docks.
-- `npcs`: stylized humans, aliens, and robots with randomized proportions, outfits, skin tones, alien heads/features, accessories, and colors.
+- `npcs`: low-poly humans, robots, and aliens with silhouette archetypes including broad-cranium crystal aliens, horned aliens, fin-headed aliens, long-necked aliens, stocky travelers, tall thin species, single-eyed and four-eyed species, slug-like travelers, mantis-like aliens, and service droids. Outfit types include jackets, coats, armor, tunics, overalls, merchant aprons, and patched suits.
+
+NPCs retain the screenshot's chunky, beveled toy-like baseline, but species change head shapes, body proportions, limb shapes, eye layouts, and accessories—not only colors. The generator randomly chooses archetypes, so any one batch may not include every archetype. Use multiple seeds to expand the collection.
 
 ## Output folders
 
@@ -49,3 +51,4 @@ Every output is an individual GLB. Import the folders into Godot and curate mode
 - NPCs are static pose meshes and are **not rigged or animated**. They are useful as placeholders, crowd silhouettes, or visual targets. Rigging and animation should be a separate next step.
 - This generator focuses on reusable props and asset variety; it does not automatically place assets into the city or make vehicles/NPCs interactive.
 - Large asset counts should be curated. Hundreds of exports do not guarantee hundreds of good or visually distinct models.
+- The script has been updated, but a local Blender batch has not yet been run to validate the exported models visually. Treat the first run as a test batch.
