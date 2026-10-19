@@ -233,7 +233,11 @@ def rig_npc(mesh_objects, name):
             ("shin."+suffix, (sx(.32),0,z(.27)), (sx(.32),0,z(.10)), "thigh."+suffix),
             ("foot."+suffix, (sx(.32),0,z(.10)), (sx(.32),-.13*height,z(.06)), "shin."+suffix),
         ])
-    bpy.ops.object.select_all(action="DESELECT")
+    # Avoid bpy.ops.object.select_all here: this function is also run in background
+    # generation contexts where the operator poll can fail. Direct selection is context-safe.
+    for selected_obj in bpy.context.view_layer.objects:
+        if selected_obj.select_get():
+            selected_obj.select_set(False)
     arm_data = bpy.data.armatures.new(name+"_Rig")
     arm = bpy.data.objects.new(name+"_Rig", arm_data)
     bpy.context.collection.objects.link(arm)
