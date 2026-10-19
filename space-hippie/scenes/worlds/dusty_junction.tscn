@@ -366,7 +366,7 @@ material_override = SubResource("RustMetal")
 
 [node name="PumpRightTop" type="MeshInstance3D" parent="Pumpworks"]
 position = Vector3(5.2, 1.85, 3.5)
-mesh = SubResource("PumpBodyMesh")
+mesh = SubResource("PumpTopMesh")
 material_override = SubResource("RustMetal")
 
 [node name="PortalLight" type="OmniLight3D" parent="Pumpworks"]
