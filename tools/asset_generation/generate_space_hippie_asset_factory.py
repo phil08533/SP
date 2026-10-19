@@ -200,6 +200,106 @@ def organic_body(name, loc, scale, material):
     # A couple of subdivisions keep the silhouette smooth-ish but still low-poly.
     return o
 
+
+def fuse_shape_cluster(objects, fused_name, voxel_size=0.035):
+    """Fuse intersecting anatomy primitives into a single watertight surface.
+    Decorative parts are deliberately excluded so eyes, armor edges, and markings stay crisp."""
+    objects = [o for o in objects if o and o.name in bpy.context.view_layer.objects and o.type == "MESH"]
+    if len(objects) < 2:
+        return objects[0] if objects else None
+    # Only join the cluster, not the whole character: each fused region can still be
+    # assigned to an appropriate bone after remeshing.
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in objects:
+        obj.select_set(True)
+    active = objects[0]
+    bpy.context.view_layer.objects.active = active
+    try:
+        bpy.ops.object.join()
+        fused = bpy.context.view_layer.objects.active
+        fused.name = fused_name
+        fused.data.remesh_voxel_size = voxel_size
+        fused.data.use_remesh_fix_poles = True
+        fused.data.use_remesh_smooth_normals = True
+        bpy.ops.object.voxel_remesh()
+        # One gentle smoothing pass softens voxel artifacts without erasing the silhouette.
+        smooth = fused.modifiers.new("Anatomy Surface Polish", "SMOOTH")
+        smooth.factor = 0.65
+        smooth.iterations = 2
+        bpy.context.view_layer.objects.active = fused
+        bpy.ops.object.modifier_apply(modifier=smooth.name)
+        for poly in fused.data.polygons:
+            poly.use_smooth = True
+        return fused
+    except Exception as exc:
+        print("Shape fusion skipped for", fused_name, ":", repr(exc))
+        return bpy.data.objects.get(fused_name) or active
+
+
+def fuse_npc_anatomy(mesh_objects):
+    """Turn the most obvious overlapping anatomy shapes into fused mesh regions.
+    Keep armor, clothes, eyes, horns, hands' small details, and accessories separate."""
+    remaining = list(mesh_objects)
+
+    def pick(predicate):
+        found = [o for o in remaining if o.type == "MESH" and predicate(o.name.lower())]
+        for obj in found:
+            if obj in remaining:
+                remaining.remove(obj)
+        return found
+
+    # Organic torso volumes become one continuous chest/abdomen/pelvis surface.
+    torso = pick(lambda n: n in ("torso", "chest_mass", "abdomen_mass", "pelvis_mass",
+                                  "soft_mantle_body", "barrel_torso", "tapered_abdomen"))
+    if len(torso) > 1:
+        fused = fuse_shape_cluster(torso, "Fused_Torso", 0.035)
+        if fused: remaining.append(fused)
+
+    # Fuse each arm's upper segment and joint separately from its forearm.
+    for side, suffix in ((-1, "L"), (1, "R")):
+        def on_side(o):
+            return (o.matrix_world.translation.x < 0) == (side < 0)
+        upper = pick(lambda n: any(k in n for k in ("upper_arm", "wing_upper", "shoulder", "elbow_joint"))
+                     and not any(k in n for k in ("pad", "plate")))
+        upper = [o for o in upper if on_side(o)]
+        # Return accidentally picked opposite-side objects to the pool for their pass.
+        for obj in list(upper):
+            if obj in remaining: remaining.remove(obj)
+        if len(upper) > 1:
+            fused = fuse_shape_cluster(upper, "Fused_UpperArm_" + suffix, 0.025)
+            if fused: remaining.append(fused)
+
+        fore = pick(lambda n: any(k in n for k in ("forearm", "wing_forearm", "elbow_joint")))
+        fore = [o for o in fore if on_side(o)]
+        for obj in list(fore):
+            if obj in remaining: remaining.remove(obj)
+        if len(fore) > 1:
+            fused = fuse_shape_cluster(fore, "Fused_Forearm_" + suffix, 0.022)
+            if fused: remaining.append(fused)
+
+        thigh = pick(lambda n: any(k in n for k in ("thigh", "power_thigh", "feathered_thigh", "stumpy_leg", "knee_joint", "spring_knee")))
+        thigh = [o for o in thigh if on_side(o)]
+        for obj in list(thigh):
+            if obj in remaining: remaining.remove(obj)
+        if len(thigh) > 1:
+            fused = fuse_shape_cluster(thigh, "Fused_Thigh_" + suffix, 0.025)
+            if fused: remaining.append(fused)
+
+        shin = pick(lambda n: any(k in n for k in ("shin", "long_shin", "bird_shin", "tendon")))
+        shin = [o for o in shin if on_side(o)]
+        for obj in list(shin):
+            if obj in remaining: remaining.remove(obj)
+        if len(shin) > 1:
+            fused = fuse_shape_cluster(shin, "Fused_Shin_" + suffix, 0.022)
+            if fused: remaining.append(fused)
+
+    # Main head and jaw form a unified organic silhouette; facial details stay separate.
+    head = pick(lambda n: n in ("head", "jaw", "wide_head", "bird_head", "slug_head", "face"))
+    if len(head) > 1:
+        fused = fuse_shape_cluster(head, "Fused_Head", 0.022)
+        if fused: remaining.append(fused)
+    return remaining
+
 def rig_npc(mesh_objects, name):
     """Create a compact rigid-weighted skeleton. Each generated part follows one bone,
     which is ideal for stylized segmented characters and straightforward code animation."""
@@ -293,6 +393,7 @@ def export(name, category):
     bpy.ops.object.convert(target="MESH")
     selected=list(bpy.context.selected_objects)
     if category == "npcs":
+        selected = fuse_npc_anatomy(selected)
         rig_npc(selected, name)
         bpy.ops.object.select_all(action="DESELECT")
         for obj in selected:
