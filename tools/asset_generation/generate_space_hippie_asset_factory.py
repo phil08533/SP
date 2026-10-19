@@ -108,10 +108,8 @@ def load_base_humanoid(species, target_height, skin, outfit, trim):
         return []
     try:
         with bpy.data.libraries.load(BASE_HUMANOID_BLEND, link=False) as (src, dst):
-            mesh_names = [n for n in src.objects if n and any(k in n.lower() for k in ("humanoid", "body", "mesh", "character"))]
-            if not mesh_names:
-                mesh_names = [n for n in src.objects if n]
-            dst.objects = mesh_names
+            # Load every object so split body meshes are not accidentally omitted by their names.
+            dst.objects = list(src.objects)
         imported = []
         for obj in dst.objects:
             if obj is None or obj.type != "MESH":
