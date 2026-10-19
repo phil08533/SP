@@ -10,7 +10,7 @@ Run from repository root:
 Each run writes separate GLBs under assets/3d/generated/<category>/.
 Seeds make a batch reproducible. Different seeds generate different batches.
 These are stylized low-poly first-pass models; inspect and curate before production.
-NPCs export as segmented mesh parts with a simple humanoid-compatible armature for later code-driven animation. Species profiles assign cached skin, shell, eye, claw, and marking materials; randomized geometry markings add variation without baking large texture maps. Robot hard-surface forms remain angular; organic species use sculptural low-poly volumes.
+NPCs export as segmented mesh parts with a simple humanoid-compatible armature for later code-driven animation. Procedural anatomy primitives are selectively joined and voxel-remeshed into continuous mesh regions before rigging; hard-surface clothing, eyes, horns, and accessories remain separate to preserve crisp detail. Species profiles assign cached skin, shell, eye, claw, and marking materials.
 """
 import bpy, math, os, random, argparse
 from mathutils import Vector
