@@ -472,13 +472,23 @@ def npc(i):
             ico("Clawed_Foot", foot, (.13*s,.19*s,.065*s), skin)
             beam("Toe_Claw", foot, (foot[0]+side*.04*s,foot[1]-.20*s,foot[2]-.015*s), .025*s, "ink")
         else:
-            foot_dims = (.24,.35,.14) if species not in ("hopper","slug_traveler") else (.28,.38,.13)
-            cube("Boot" if not robot else "Metal_Foot",
-                 (foot[0],foot[1]-.025*s,max(.055*s,foot[2])),
-                 tuple(v*s for v in foot_dims), "ink" if not robot else "steel", .035*s)
             if robot:
-                cube("Foot_Light", (foot[0],foot[1]-.20*s,foot[2]),
-                     (.10*s,.025*s,.035*s), trim, .008*s)
+                # Preserve the deliberately square, readable robot feet.
+                cube("Metal_Foot",(foot[0],foot[1]-.035*s,max(.055*s,foot[2])),(.24*s,.34*s,.15*s),"steel",.035*s)
+                cube("Foot_Sole",(foot[0],foot[1]-.07*s,max(.035*s,foot[2]-.055*s)),(.25*s,.36*s,.045*s),"ink",.012*s)
+                cube("Foot_Light",(foot[0],foot[1]-.205*s,foot[2]),(.10*s,.025*s,.035*s),trim,.008*s)
+            else:
+                # Heel, instep and forefoot form a shaped foot instead of a box boot.
+                ico("Heel",(foot[0],foot[1]+.015*s,foot[2]+.012*s),(.075*s,.085*s,.065*s),skin)
+                ico("Foot_Instep",(foot[0],foot[1]-.045*s,foot[2]+.012*s),(.095*s,.14*s,.065*s),skin if species in ("hopper","slug_traveler") else outfit)
+                ico("Forefoot",(foot[0],foot[1]-.12*s,foot[2]),(.125*s,.105*s,.055*s),skin)
+                toe_count = 4 if species in ("brute","stocky") else 3
+                for toe_i in range(toe_count):
+                    spread=(toe_i-(toe_count-1)/2)*.055*s
+                    toe_end=(foot[0]+spread,foot[1]-.235*s,foot[2]-.008*s)
+                    beam("Toe",(foot[0]+spread*.55,foot[1]-.13*s,foot[2]),toe_end,.024*s,skin)
+                    if species in ("mantis","shellback","brute"):
+                        beam("Toe_Claw",toe_end,(toe_end[0]+spread*.18,toe_end[1]-.045*s,toe_end[2]-.012*s),.012*s,claw_mat)
 
     # Torso volume: different silhouettes and layered masses prevent the same-box-body look.
     torso_z = 1.10*s
@@ -494,7 +504,7 @@ def npc(i):
         cube("Shoulder_Mantle", (0,0,1.35*s), (.88*s,.40*s,.20*s), outfit, .07*s)
     elif torso_style == "shell":
         cube("Torso", (0,0,torso_z), torso_dims, outfit, .08*s)
-        ico("Domed_Shell", (0,.13*s,1.25*s), (.40*s,.20*s,.36*s), random.choice(["rust","teal","alien_green"]))
+        ico("Domed_Shell", (0,.13*s,1.25*s), (.40*s,.20*s,.36*s), shell_mat)
         for side in (-1,1):
             beam("Shell_Ridge", (side*.12*s,.01*s,1.48*s), (side*.24*s,.02*s,1.25*s), .025*s, "cream")
     elif torso_style == "robot":
@@ -506,8 +516,11 @@ def npc(i):
         if torso_style in ("carapace","feather"):
             organic_body("Torso", (0,0,torso_z), (body_w*.49*s,.23*s,torso_h*.53*s), outfit)
         else:
-            # Non-robot characters use a faceted, tapered body instead of a plain cube.
-            organic_body("Torso", (0,.015*s,torso_z), (body_w*.50*s,.245*s,torso_h*.54*s), outfit)
+            # Layered chest, abdomen and pelvis create a readable anatomical silhouette.
+            organic_body("Torso", (0,.015*s,torso_z), (body_w*.48*s,.235*s,torso_h*.48*s), outfit)
+            organic_body("Chest_Mass", (0,-.015*s,1.24*s), (body_w*.49*s,.235*s,.205*s), outfit)
+            organic_body("Abdomen_Mass", (0,-.005*s,.99*s), (body_w*.32*s,.205*s,.19*s), skin if alien else outfit)
+            organic_body("Pelvis_Mass", (0,.005*s,.79*s), (body_w*.39*s,.205*s,.15*s), outfit)
         if torso_style == "carapace":
             ico("Thorax_Plate", (0,-.17*s,1.18*s), (.24*s,.10*s,.30*s), skin)
             cube("Abdomen_Plate", (0,.015*s,.91*s), (.33*s,.30*s,.30*s), skin, .06*s)
@@ -570,13 +583,24 @@ def npc(i):
             beam("Upper_Arm", shoulder, elbow, arm_w*s*(1.25 if species=="brute" else 1), outfit if not robot else "steel")
             ico("Elbow", elbow, (.075*s,.08*s,.075*s), "steel" if robot else skin)
             beam("Forearm", elbow, wrist, arm_w*s*.82, outfit if not robot else "metal")
-            ico("Hand", wrist, (.085*s,.075*s,.09*s), "steel" if robot else skin)
             if robot:
-                cube("Knuckle", (wrist[0],wrist[1]-.045*s,wrist[2]), (.11*s,.035*s,.07*s), trim, .01*s)
-            elif species == "brute":
+                cube("Robot_Palm",(wrist[0],wrist[1]-.025*s,wrist[2]),(.13*s,.065*s,.105*s),"steel",.018*s)
+                cube("Knuckle",(wrist[0],wrist[1]-.065*s,wrist[2]),(.11*s,.035*s,.07*s),trim,.01*s)
                 for finger in (-1,0,1):
-                    beam("Finger", (wrist[0]+finger*.035*s,wrist[1]-.03*s,wrist[2]),
-                         (wrist[0]+finger*.045*s,wrist[1]-.11*s,wrist[2]-.035*s), .022*s, skin)
+                    cube("Robot_Finger",(wrist[0]+finger*.035*s,wrist[1]-.075*s,wrist[2]-.055*s),(.025*s,.045*s,.075*s),"steel",.006*s)
+            else:
+                ico("Palm",(wrist[0],wrist[1]-.025*s,wrist[2]-.005*s),(.072*s,.043*s,.078*s),skin)
+                for finger in (-1.5,-.5,.5,1.5):
+                    fx=wrist[0]+finger*.031*s
+                    length_factor=1.0 if abs(finger)<1 else .82
+                    start=(fx,wrist[1]-.045*s,wrist[2]-.025*s)
+                    end=(fx+side*.006*s,wrist[1]-.095*s,wrist[2]-.095*s*length_factor)
+                    beam("Finger",start,end,.018*s,skin)
+                thumb_start=(wrist[0]-side*.055*s,wrist[1]-.02*s,wrist[2]-.005*s)
+                thumb_end=(wrist[0]-side*.105*s,wrist[1]-.065*s,wrist[2]-.045*s)
+                beam("Thumb",thumb_start,thumb_end,.022*s,skin)
+                if species in ("mantis","shellback","brute"):
+                    beam("Hand_Claw",(wrist[0],wrist[1]-.09*s,wrist[2]-.09*s),(wrist[0]+side*.025*s,wrist[1]-.15*s,wrist[2]-.15*s),.018*s,claw_mat)
         if species in ("stocky","brute"):
             ico("Shoulder_Pad", (side*(body_w*.50)*s,-.01*s,shoulder_z*s),
                 (.17*s,.20*s,.17*s), "steel" if species=="stocky" else outfit)
@@ -642,7 +666,7 @@ def npc(i):
                     ico("Ear", (side*.205*s,-.005*s,(head_z-.015)*s), (.045*s,.055*s,.07*s), skin)
                 ico("Nose", (0,-.218*s,(head_z-.015)*s), (.035*s,.035*s,.055*s), skin)
             if species == "cyclops":
-                ico("Single_Eye", (0,-.218*s,head_z*s), (.095*s,.035*s,.095*s), random.choice(["eye","cyan"]))
+                ico("Single_Eye", (0,-.218*s,head_z*s), (.095*s,.035*s,.095*s), random.choice([eye_mat,"cyan"]))
             else:
                 eye_count = 4 if species == "four_eyed" else 2
                 for n in range(eye_count):
