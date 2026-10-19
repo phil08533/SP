@@ -32,10 +32,13 @@ h1{font-size:18px;margin:0}small,.muted{color:var(--muted)}button,select,input[t
 <p class="hint">This is a local browser tool. It does not delete or modify assets. “Export decisions” downloads a JSON list of files marked keep/reject so you can curate them safely.</p>
 </main>
 </div>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const $=id=>document.getElementById(id);
 const codeExt=new Set(['.py','.gd','.js','.mjs','.ts','.html','.css','.json','.md','.txt','.shader','.gdshader','.glsl','.xml','.yml','.yaml','.toml','.cfg','.ini','.sh']);
 const modelExt=new Set(['.glb','.gltf']);const imageExt=new Set(['.png','.jpg','.jpeg','.webp','.gif','.bmp']);
