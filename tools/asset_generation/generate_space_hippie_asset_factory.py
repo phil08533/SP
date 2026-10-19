@@ -91,6 +91,72 @@ def mat(key):
     MATS[key] = m
     return m
 
+
+BASE_HUMANOID_BLEND = os.path.join(
+    ROOT, "assets", "3d", "generated", "Base Humanoid Mesh",
+    "Base Humanoid Mesh", "Humanoid.blend"
+)
+BASE_HUMANOID_CACHE = None
+
+def load_base_humanoid(species, target_height, skin, outfit, trim):
+    """Append the supplied non-overlapping humanoid mesh from the user's .blend.
+    The source is used as the actual body mesh (not traced with extra primitive limbs).
+    Falls back cleanly when the source file is absent or contains no mesh objects."""
+    global BASE_HUMANOID_CACHE
+    if not os.path.isfile(BASE_HUMANOID_BLEND):
+        print("Base Humanoid Mesh not found; using procedural fallback:", BASE_HUMANOID_BLEND)
+        return []
+    try:
+        with bpy.data.libraries.load(BASE_HUMANOID_BLEND, link=False) as (src, dst):
+            mesh_names = [n for n in src.objects if n and any(k in n.lower() for k in ("humanoid", "body", "mesh", "character"))]
+            if not mesh_names:
+                mesh_names = [n for n in src.objects if n]
+            dst.objects = mesh_names
+        imported = []
+        for obj in dst.objects:
+            if obj is None or obj.type != "MESH":
+                continue
+            bpy.context.collection.objects.link(obj)
+            obj.name = "BaseHumanoid_" + obj.name
+            imported.append(obj)
+        if not imported:
+            print("Base Humanoid Mesh blend had no mesh objects; using procedural fallback")
+            return []
+        # Compute combined world-space bounds, then normalize the source to our NPC scale.
+        corners = [obj.matrix_world @ Vector(corner) for obj in imported for corner in obj.bound_box]
+        min_x, max_x = min(v.x for v in corners), max(v.x for v in corners)
+        min_y, max_y = min(v.y for v in corners), max(v.y for v in corners)
+        min_z, max_z = min(v.z for v in corners), max(v.z for v in corners)
+        source_h = max(0.001, max_z - min_z)
+        factor = target_height / source_h
+        center_x, center_y = (min_x + max_x) * .5, (min_y + max_y) * .5
+        # Slight archetype shaping preserves the base topology but varies the silhouette.
+        width_factor = {"stocky":1.18, "brute":1.30, "wide_cranium":1.06,
+                        "tall_thin":.78, "human":1.0}.get(species, 1.0)
+        for obj in imported:
+            obj.location.x = (obj.location.x - center_x) * factor * width_factor
+            obj.location.y = (obj.location.y - center_y) * factor
+            obj.location.z = (obj.location.z - min_z) * factor
+            obj.scale.x *= factor * width_factor
+            obj.scale.y *= factor
+            obj.scale.z *= factor
+            # Keep the user's mesh topology, but make its surface materials consistent.
+            if len(obj.data.materials) == 0:
+                obj.data.materials.append(mat(skin))
+            else:
+                for slot_i, old in enumerate(list(obj.data.materials)):
+                    label = (old.name.lower() if old else "")
+                    if any(k in label for k in ("cloth", "shirt", "pants", "jacket", "outfit")):
+                        obj.data.materials[slot_i] = mat(outfit)
+                    elif any(k in label for k in ("eye", "metal", "armor", "accessory")):
+                        obj.data.materials[slot_i] = mat("steel" if "metal" in label or "armor" in label else trim)
+                    else:
+                        obj.data.materials[slot_i] = mat(skin)
+        return imported
+    except Exception as exc:
+        print("Could not load Base Humanoid Mesh; using procedural fallback:", repr(exc))
+        return []
+
 def reset():
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
@@ -387,6 +453,10 @@ def npc(i):
     claw_mat = npc_material("claw", "ink")
     shell_mat = npc_material("shell", outfit)
     garment = random.choice(["jacket", "coat", "armor", "tunic", "overalls", "merchant_apron", "patched_suit"])
+    # Use the supplied non-overlapping base mesh for humans and selected near-human aliens.
+    base_species = human or species in ("stocky", "tall_thin", "wide_cranium", "brute")
+    base_mesh_parts = load_base_humanoid(species, height, skin, outfit, trim) if base_species else []
+    using_base_mesh = bool(base_mesh_parts)
 
     # Proportion presets alter the entire figure, not merely its head or paint.
     body_w, torso_h, head_w, head_h = .55, .68, .42, .38
@@ -439,123 +509,127 @@ def npc(i):
         body_w, torso_h, head_w, head_h, leg_w, stance, arm_w = .82, .72, .43, .35, .16, .27, .14
         torso_style = "barrel"
 
-    # Legs are built as upper/lower segments with visible knee joints, ankle and shaped feet.
-    for side in (-1, 1):
-        x = side * stance * s
-        hip = (x, 0, hip_z*s)
-        if leg_style == "digitigrade":
-            knee = (x + side*.07*s, .015, .43*s)
-            ankle = (x - side*.015*s, -.015, .22*s)
-            beam("Thigh", hip, knee, leg_w*s*1.12, skin if species in ("mantis","shellback") else outfit)
-            ico("Knee_Joint", knee, (.105*s,.11*s,.10*s), skin)
-            beam("Shin", knee, ankle, leg_w*s*.68, outfit)
-            foot = (ankle[0]+side*.04*s, -.13*s, .10*s)
-        elif leg_style == "spring":
-            knee = (x + side*.08*s, .01, .39*s)
-            ankle = (x - side*.015*s, -.02, .19*s)
-            beam("Power_Thigh", hip, knee, leg_w*s*1.3, outfit)
-            ico("Spring_Knee", knee, (.13*s,.12*s,.12*s), skin)
-            beam("Long_Shin", knee, ankle, leg_w*s*.72, skin)
-            foot = (ankle[0], -.15*s, .08*s)
-        elif leg_style == "bird":
-            knee = (x + side*.015*s, 0, .48*s)
-            ankle = (x + side*.045*s, -.04, .19*s)
-            beam("Feathered_Thigh", hip, knee, leg_w*s*1.15, outfit)
-            ico("Knee", knee, (.09*s,.09*s,.09*s), skin)
-            beam("Bird_Shin", knee, ankle, leg_w*s*.55, skin)
-            foot = (ankle[0]+side*.03*s, -.19*s, .075*s)
-        elif leg_style == "stump":
-            knee = (x, 0, .39*s)
-            beam("Stumpy_Leg", hip, knee, leg_w*s*1.45, skin)
-            foot = (x, -.10*s, .12*s)
-        else:
-            knee = (x + side*.015*s, 0, .43*s)
-            ankle = (x + side*random.uniform(-.015,.035)*s, -.02, .17*s)
-            beam("Thigh", hip, knee, leg_w*s*1.18, outfit if not robot else "metal")
-            ico("Knee", knee, (.095*s,.10*s,.095*s), "steel" if robot else skin)
-            beam("Shin", knee, ankle, leg_w*s*.78, outfit if not robot else "metal")
-            foot = (ankle[0]+side*.025*s, -.12*s, .08*s)
-
-        if species == "avian":
-            # Three obvious toes make the feet read as bird-like, not boots.
-            ico("Bird_Foot", foot, (.105*s,.15*s,.055*s), skin)
-            for toe in (-1, 0, 1):
-                beam("Toe", (foot[0],foot[1]-.04*s,foot[2]),
-                     (foot[0]+toe*.075*s,foot[1]-.19*s,foot[2]-.015*s), .022*s, skin)
-        elif species in ("mantis","shellback"):
-            ico("Clawed_Foot", foot, (.13*s,.19*s,.065*s), skin)
-            beam("Toe_Claw", foot, (foot[0]+side*.04*s,foot[1]-.20*s,foot[2]-.015*s), .025*s, "ink")
-        else:
-            if robot:
-                # Preserve the deliberately square, readable robot feet.
-                cube("Metal_Foot",(foot[0],foot[1]-.035*s,max(.055*s,foot[2])),(.24*s,.34*s,.15*s),"steel",.035*s)
-                cube("Foot_Sole",(foot[0],foot[1]-.07*s,max(.035*s,foot[2]-.055*s)),(.25*s,.36*s,.045*s),"ink",.012*s)
-                cube("Foot_Light",(foot[0],foot[1]-.205*s,foot[2]),(.10*s,.025*s,.035*s),trim,.008*s)
+    if not using_base_mesh:
+        # Legs are built as upper/lower segments with visible knee joints, ankle and shaped feet.
+        for side in (-1, 1):
+            x = side * stance * s
+            hip = (x, 0, hip_z*s)
+            if leg_style == "digitigrade":
+                knee = (x + side*.07*s, .015, .43*s)
+                ankle = (x - side*.015*s, -.015, .22*s)
+                beam("Thigh", hip, knee, leg_w*s*1.12, skin if species in ("mantis","shellback") else outfit)
+                ico("Knee_Joint", knee, (.105*s,.11*s,.10*s), skin)
+                beam("Shin", knee, ankle, leg_w*s*.68, outfit)
+                foot = (ankle[0]+side*.04*s, -.13*s, .10*s)
+            elif leg_style == "spring":
+                knee = (x + side*.08*s, .01, .39*s)
+                ankle = (x - side*.015*s, -.02, .19*s)
+                beam("Power_Thigh", hip, knee, leg_w*s*1.3, outfit)
+                ico("Spring_Knee", knee, (.13*s,.12*s,.12*s), skin)
+                beam("Long_Shin", knee, ankle, leg_w*s*.72, skin)
+                foot = (ankle[0], -.15*s, .08*s)
+            elif leg_style == "bird":
+                knee = (x + side*.015*s, 0, .48*s)
+                ankle = (x + side*.045*s, -.04, .19*s)
+                beam("Feathered_Thigh", hip, knee, leg_w*s*1.15, outfit)
+                ico("Knee", knee, (.09*s,.09*s,.09*s), skin)
+                beam("Bird_Shin", knee, ankle, leg_w*s*.55, skin)
+                foot = (ankle[0]+side*.03*s, -.19*s, .075*s)
+            elif leg_style == "stump":
+                knee = (x, 0, .39*s)
+                beam("Stumpy_Leg", hip, knee, leg_w*s*1.45, skin)
+                foot = (x, -.10*s, .12*s)
             else:
-                # Heel, instep and forefoot form a shaped foot instead of a box boot.
-                ico("Heel",(foot[0],foot[1]+.015*s,foot[2]+.012*s),(.075*s,.085*s,.065*s),skin)
-                ico("Foot_Instep",(foot[0],foot[1]-.045*s,foot[2]+.012*s),(.095*s,.14*s,.065*s),skin if species in ("hopper","slug_traveler") else outfit)
-                ico("Forefoot",(foot[0],foot[1]-.12*s,foot[2]),(.125*s,.105*s,.055*s),skin)
-                toe_count = 4 if species in ("brute","stocky") else 3
-                for toe_i in range(toe_count):
-                    spread=(toe_i-(toe_count-1)/2)*.055*s
-                    toe_end=(foot[0]+spread,foot[1]-.235*s,foot[2]-.008*s)
-                    beam("Toe",(foot[0]+spread*.55,foot[1]-.13*s,foot[2]),toe_end,.024*s,skin)
-                    if species in ("mantis","shellback","brute"):
-                        beam("Toe_Claw",toe_end,(toe_end[0]+spread*.18,toe_end[1]-.045*s,toe_end[2]-.012*s),.012*s,claw_mat)
-
-    # Torso volume: different silhouettes and layered masses prevent the same-box-body look.
-    torso_z = 1.10*s
-    torso_dims = (body_w*s, .34*s, torso_h*s)
-    if torso_style == "slug":
-        ico("Soft_Mantle_Body", (0,.015*s,.94*s), (.43*s,.29*s,.38*s), skin)
-        cube("Traveler_Vest", (0,-.19*s,1.02*s), (.55*s,.08*s,.38*s), outfit, .06*s)
-    elif torso_style == "pear":
-        ico("Tapered_Abdomen", (0,0,.99*s), (body_w*.52*s,.25*s,.43*s), skin)
-        cube("Chest_Garment", (0,-.16*s,1.20*s), (body_w*.80*s,.10*s,.30*s), outfit, .045*s)
-    elif torso_style == "barrel":
-        ico("Barrel_Torso", (0,0,1.08*s), (.44*s,.27*s,.40*s), outfit)
-        cube("Shoulder_Mantle", (0,0,1.35*s), (.88*s,.40*s,.20*s), outfit, .07*s)
-    elif torso_style == "shell":
-        cube("Torso", (0,0,torso_z), torso_dims, outfit, .08*s)
-        ico("Domed_Shell", (0,.13*s,1.25*s), (.40*s,.20*s,.36*s), shell_mat)
-        for side in (-1,1):
-            beam("Shell_Ridge", (side*.12*s,.01*s,1.48*s), (side*.24*s,.02*s,1.25*s), .025*s, "cream")
-    elif torso_style == "robot":
-        cube("Torso", (0,0,torso_z), torso_dims, "metal", .055*s)
-        cube("Abdominal_Block", (0,-.18*s,.91*s), (body_w*.62*s,.09*s,.24*s), "ink", .025*s)
-        cube("Core", (0,-.235*s,1.13*s), (.17*s,.035*s,.17*s), trim, .02*s)
-        cube("Collar", (0,0,1.43*s), (body_w*.76*s,.38*s,.10*s), "steel", .025*s)
-    else:
-        if torso_style in ("carapace","feather"):
-            organic_body("Torso", (0,0,torso_z), (body_w*.49*s,.23*s,torso_h*.53*s), outfit)
+                knee = (x + side*.015*s, 0, .43*s)
+                ankle = (x + side*random.uniform(-.015,.035)*s, -.02, .17*s)
+                beam("Thigh", hip, knee, leg_w*s*1.18, outfit if not robot else "metal")
+                ico("Knee", knee, (.095*s,.10*s,.095*s), "steel" if robot else skin)
+                beam("Shin", knee, ankle, leg_w*s*.78, outfit if not robot else "metal")
+                foot = (ankle[0]+side*.025*s, -.12*s, .08*s)
+    
+            if species == "avian":
+                # Three obvious toes make the feet read as bird-like, not boots.
+                ico("Bird_Foot", foot, (.105*s,.15*s,.055*s), skin)
+                for toe in (-1, 0, 1):
+                    beam("Toe", (foot[0],foot[1]-.04*s,foot[2]),
+                         (foot[0]+toe*.075*s,foot[1]-.19*s,foot[2]-.015*s), .022*s, skin)
+            elif species in ("mantis","shellback"):
+                ico("Clawed_Foot", foot, (.13*s,.19*s,.065*s), skin)
+                beam("Toe_Claw", foot, (foot[0]+side*.04*s,foot[1]-.20*s,foot[2]-.015*s), .025*s, "ink")
+            else:
+                if robot:
+                    # Preserve the deliberately square, readable robot feet.
+                    cube("Metal_Foot",(foot[0],foot[1]-.035*s,max(.055*s,foot[2])),(.24*s,.34*s,.15*s),"steel",.035*s)
+                    cube("Foot_Sole",(foot[0],foot[1]-.07*s,max(.035*s,foot[2]-.055*s)),(.25*s,.36*s,.045*s),"ink",.012*s)
+                    cube("Foot_Light",(foot[0],foot[1]-.205*s,foot[2]),(.10*s,.025*s,.035*s),trim,.008*s)
+                else:
+                    # Heel, instep and forefoot form a shaped foot instead of a box boot.
+                    ico("Heel",(foot[0],foot[1]+.015*s,foot[2]+.012*s),(.075*s,.085*s,.065*s),skin)
+                    ico("Foot_Instep",(foot[0],foot[1]-.045*s,foot[2]+.012*s),(.095*s,.14*s,.065*s),skin if species in ("hopper","slug_traveler") else outfit)
+                    ico("Forefoot",(foot[0],foot[1]-.12*s,foot[2]),(.125*s,.105*s,.055*s),skin)
+                    toe_count = 4 if species in ("brute","stocky") else 3
+                    for toe_i in range(toe_count):
+                        spread=(toe_i-(toe_count-1)/2)*.055*s
+                        toe_end=(foot[0]+spread,foot[1]-.235*s,foot[2]-.008*s)
+                        beam("Toe",(foot[0]+spread*.55,foot[1]-.13*s,foot[2]),toe_end,.024*s,skin)
+                        if species in ("mantis","shellback","brute"):
+                            beam("Toe_Claw",toe_end,(toe_end[0]+spread*.18,toe_end[1]-.045*s,toe_end[2]-.012*s),.012*s,claw_mat)
+    
+    
+    if not using_base_mesh:
+        # Torso volume: different silhouettes and layered masses prevent the same-box-body look.
+        torso_z = 1.10*s
+        torso_dims = (body_w*s, .34*s, torso_h*s)
+        if torso_style == "slug":
+            ico("Soft_Mantle_Body", (0,.015*s,.94*s), (.43*s,.29*s,.38*s), skin)
+            cube("Traveler_Vest", (0,-.19*s,1.02*s), (.55*s,.08*s,.38*s), outfit, .06*s)
+        elif torso_style == "pear":
+            ico("Tapered_Abdomen", (0,0,.99*s), (body_w*.52*s,.25*s,.43*s), skin)
+            cube("Chest_Garment", (0,-.16*s,1.20*s), (body_w*.80*s,.10*s,.30*s), outfit, .045*s)
+        elif torso_style == "barrel":
+            ico("Barrel_Torso", (0,0,1.08*s), (.44*s,.27*s,.40*s), outfit)
+            cube("Shoulder_Mantle", (0,0,1.35*s), (.88*s,.40*s,.20*s), outfit, .07*s)
+        elif torso_style == "shell":
+            cube("Torso", (0,0,torso_z), torso_dims, outfit, .08*s)
+            ico("Domed_Shell", (0,.13*s,1.25*s), (.40*s,.20*s,.36*s), shell_mat)
+            for side in (-1,1):
+                beam("Shell_Ridge", (side*.12*s,.01*s,1.48*s), (side*.24*s,.02*s,1.25*s), .025*s, "cream")
+        elif torso_style == "robot":
+            cube("Torso", (0,0,torso_z), torso_dims, "metal", .055*s)
+            cube("Abdominal_Block", (0,-.18*s,.91*s), (body_w*.62*s,.09*s,.24*s), "ink", .025*s)
+            cube("Core", (0,-.235*s,1.13*s), (.17*s,.035*s,.17*s), trim, .02*s)
+            cube("Collar", (0,0,1.43*s), (body_w*.76*s,.38*s,.10*s), "steel", .025*s)
         else:
-            # Layered chest, abdomen and pelvis create a readable anatomical silhouette.
-            organic_body("Torso", (0,.015*s,torso_z), (body_w*.48*s,.235*s,torso_h*.48*s), outfit)
-            organic_body("Chest_Mass", (0,-.015*s,1.24*s), (body_w*.49*s,.235*s,.205*s), outfit)
-            organic_body("Abdomen_Mass", (0,-.005*s,.99*s), (body_w*.32*s,.205*s,.19*s), skin if alien else outfit)
-            organic_body("Pelvis_Mass", (0,.005*s,.79*s), (body_w*.39*s,.205*s,.15*s), outfit)
-        if torso_style == "carapace":
-            ico("Thorax_Plate", (0,-.17*s,1.18*s), (.24*s,.10*s,.30*s), skin)
-            cube("Abdomen_Plate", (0,.015*s,.91*s), (.33*s,.30*s,.30*s), skin, .06*s)
-        elif torso_style == "feather":
-            for row in range(3):
-                for side in (-1,1):
-                    ico("Feather_Plate", (side*(.10+row*.07)*s,-.19*s,(1.32-row*.13)*s),
-                        (.12*s,.035*s,.10*s), skin)
-        if garment in ("coat","tunic","merchant_apron"):
-            cube("Lower_Garment", (0,.015*s,.76*s),
-                 (body_w*1.12*s,.38*s,.32*s), outfit, .055*s)
-        if garment == "armor":
-            cube("Chest_Plate", (0,-.19*s,1.18*s), (.44*s,.075*s,.34*s), "steel", .035*s)
-            cube("Chest_Light", (0,-.235*s,1.18*s), (.16*s,.025*s,.06*s), trim, .01*s)
-        elif garment in ("overalls","merchant_apron"):
-            cube("Bib", (0,-.19*s,1.16*s), (.34*s,.06*s,.34*s),
-                 "cream" if garment=="overalls" else random.choice(["rust","yellow","teal"]), .02*s)
-        elif garment == "patched_suit":
-            cube("Suit_Patch", (random.choice([-.13,.13])*s,-.19*s,1.16*s),
-                 (.12*s,.025*s,.14*s), random.choice(["cream","rust","yellow"]), .01*s)
-
+            if torso_style in ("carapace","feather"):
+                organic_body("Torso", (0,0,torso_z), (body_w*.49*s,.23*s,torso_h*.53*s), outfit)
+            else:
+                # Layered chest, abdomen and pelvis create a readable anatomical silhouette.
+                organic_body("Torso", (0,.015*s,torso_z), (body_w*.48*s,.235*s,torso_h*.48*s), outfit)
+                organic_body("Chest_Mass", (0,-.015*s,1.24*s), (body_w*.49*s,.235*s,.205*s), outfit)
+                organic_body("Abdomen_Mass", (0,-.005*s,.99*s), (body_w*.32*s,.205*s,.19*s), skin if alien else outfit)
+                organic_body("Pelvis_Mass", (0,.005*s,.79*s), (body_w*.39*s,.205*s,.15*s), outfit)
+            if torso_style == "carapace":
+                ico("Thorax_Plate", (0,-.17*s,1.18*s), (.24*s,.10*s,.30*s), skin)
+                cube("Abdomen_Plate", (0,.015*s,.91*s), (.33*s,.30*s,.30*s), skin, .06*s)
+            elif torso_style == "feather":
+                for row in range(3):
+                    for side in (-1,1):
+                        ico("Feather_Plate", (side*(.10+row*.07)*s,-.19*s,(1.32-row*.13)*s),
+                            (.12*s,.035*s,.10*s), skin)
+            if garment in ("coat","tunic","merchant_apron"):
+                cube("Lower_Garment", (0,.015*s,.76*s),
+                     (body_w*1.12*s,.38*s,.32*s), outfit, .055*s)
+            if garment == "armor":
+                cube("Chest_Plate", (0,-.19*s,1.18*s), (.44*s,.075*s,.34*s), "steel", .035*s)
+                cube("Chest_Light", (0,-.235*s,1.18*s), (.16*s,.025*s,.06*s), trim, .01*s)
+            elif garment in ("overalls","merchant_apron"):
+                cube("Bib", (0,-.19*s,1.16*s), (.34*s,.06*s,.34*s),
+                     "cream" if garment=="overalls" else random.choice(["rust","yellow","teal"]), .02*s)
+            elif garment == "patched_suit":
+                cube("Suit_Patch", (random.choice([-.13,.13])*s,-.19*s,1.16*s),
+                     (.12*s,.025*s,.14*s), random.choice(["cream","rust","yellow"]), .01*s)
+    
+    
     # Necks are visibly different, with collars or stacked segments where appropriate.
     if species == "long_neck":
         cyl("Long_Neck", (0,0,1.48*s), .105*s, .54*s, skin, 7)
@@ -567,60 +641,77 @@ def npc(i):
     else:
         cyl("Neck", (0,0,1.43*s), .105*s, .16*s, skin if not robot else "steel", 7)
 
-    # Arms have shoulders, elbows, forearms and hands/claws; anatomy differs by species.
-    for side in (-1,1):
-        shoulder = (side*(body_w*.52)*s, 0, shoulder_z*s)
-        if arm_style == "scythe":
-            elbow = (side*.46*s,-.015*s,1.17*s)
-            wrist = (side*.58*s,-.09*s,1.29*s)
-            ico("Shoulder_Joint", shoulder, (.12*s,.12*s,.13*s), skin)
-            beam("Upper_Arm", shoulder, elbow, arm_w*s*.8, skin)
-            ico("Elbow_Joint", elbow, (.075*s,.075*s,.075*s), skin)
-            beam("Blade_Forearm", elbow, wrist, arm_w*s*.55, outfit)
-            beam("Hooked_Claw", wrist, (wrist[0]+side*.15*s,-.10*s,1.43*s), .035*s, skin)
-        elif arm_style == "wing":
-            elbow = (side*.49*s,-.015*s,1.18*s)
-            wrist = (side*.62*s,-.05*s,1.02*s)
-            beam("Wing_Upper", shoulder, elbow, arm_w*s*1.2, outfit)
-            ico("Wing_Joint", elbow, (.09*s,.10*s,.09*s), skin)
-            beam("Wing_Forearm", elbow, wrist, arm_w*s*.75, skin)
-            ico("Wing_Tip", wrist, (.07*s,.07*s,.08*s), skin)
-            for j in range(2):
-                beam("Wing_Feather", (wrist[0],wrist[1],wrist[2]+j*.04*s),
-                     (wrist[0]+side*.13*s,wrist[1]-.03*s,wrist[2]-.12*s+j*.03*s), .022*s, outfit)
-        else:
-            elbow_z = random.uniform(.94,1.12)*s
-            elbow = (side*random.uniform(.37,.48)*s,-.025*s,elbow_z)
-            wrist = (elbow[0]+side*.025*s,-.055*s,elbow[2]-.19*s)
-            shoulder_mat = "steel" if robot else (skin if species in ("shellback","brute") else outfit)
-            ico("Shoulder", shoulder, (.12*s,.13*s,.13*s), shoulder_mat)
-            beam("Upper_Arm", shoulder, elbow, arm_w*s*(1.25 if species=="brute" else 1), outfit if not robot else "steel")
-            ico("Elbow", elbow, (.075*s,.08*s,.075*s), "steel" if robot else skin)
-            beam("Forearm", elbow, wrist, arm_w*s*.82, outfit if not robot else "metal")
-            if robot:
-                cube("Robot_Palm",(wrist[0],wrist[1]-.025*s,wrist[2]),(.13*s,.065*s,.105*s),"steel",.018*s)
-                cube("Knuckle",(wrist[0],wrist[1]-.065*s,wrist[2]),(.11*s,.035*s,.07*s),trim,.01*s)
-                for finger in (-1,0,1):
-                    cube("Robot_Finger",(wrist[0]+finger*.035*s,wrist[1]-.075*s,wrist[2]-.055*s),(.025*s,.045*s,.075*s),"steel",.006*s)
+    if not using_base_mesh:
+        # Arms have shoulders, elbows, forearms and hands/claws; anatomy differs by species.
+        for side in (-1,1):
+            shoulder = (side*(body_w*.52)*s, 0, shoulder_z*s)
+            if arm_style == "scythe":
+                elbow = (side*.46*s,-.015*s,1.17*s)
+                wrist = (side*.58*s,-.09*s,1.29*s)
+                ico("Shoulder_Joint", shoulder, (.12*s,.12*s,.13*s), skin)
+                beam("Upper_Arm", shoulder, elbow, arm_w*s*.8, skin)
+                ico("Elbow_Joint", elbow, (.075*s,.075*s,.075*s), skin)
+                beam("Blade_Forearm", elbow, wrist, arm_w*s*.55, outfit)
+                beam("Hooked_Claw", wrist, (wrist[0]+side*.15*s,-.10*s,1.43*s), .035*s, skin)
+            elif arm_style == "wing":
+                elbow = (side*.49*s,-.015*s,1.18*s)
+                wrist = (side*.62*s,-.05*s,1.02*s)
+                beam("Wing_Upper", shoulder, elbow, arm_w*s*1.2, outfit)
+                ico("Wing_Joint", elbow, (.09*s,.10*s,.09*s), skin)
+                beam("Wing_Forearm", elbow, wrist, arm_w*s*.75, skin)
+                ico("Wing_Tip", wrist, (.07*s,.07*s,.08*s), skin)
+                for j in range(2):
+                    beam("Wing_Feather", (wrist[0],wrist[1],wrist[2]+j*.04*s),
+                         (wrist[0]+side*.13*s,wrist[1]-.03*s,wrist[2]-.12*s+j*.03*s), .022*s, outfit)
             else:
-                ico("Palm",(wrist[0],wrist[1]-.025*s,wrist[2]-.005*s),(.072*s,.043*s,.078*s),skin)
-                for finger in (-1.5,-.5,.5,1.5):
-                    fx=wrist[0]+finger*.031*s
-                    length_factor=1.0 if abs(finger)<1 else .82
-                    start=(fx,wrist[1]-.045*s,wrist[2]-.025*s)
-                    end=(fx+side*.006*s,wrist[1]-.095*s,wrist[2]-.095*s*length_factor)
-                    beam("Finger",start,end,.018*s,skin)
-                thumb_start=(wrist[0]-side*.055*s,wrist[1]-.02*s,wrist[2]-.005*s)
-                thumb_end=(wrist[0]-side*.105*s,wrist[1]-.065*s,wrist[2]-.045*s)
-                beam("Thumb",thumb_start,thumb_end,.022*s,skin)
-                if species in ("mantis","shellback","brute"):
-                    beam("Hand_Claw",(wrist[0],wrist[1]-.09*s,wrist[2]-.09*s),(wrist[0]+side*.025*s,wrist[1]-.15*s,wrist[2]-.15*s),.018*s,claw_mat)
-        if species in ("stocky","brute"):
-            ico("Shoulder_Pad", (side*(body_w*.50)*s,-.01*s,shoulder_z*s),
-                (.17*s,.20*s,.17*s), "steel" if species=="stocky" else outfit)
-
+                elbow_z = random.uniform(.94,1.12)*s
+                elbow = (side*random.uniform(.37,.48)*s,-.025*s,elbow_z)
+                wrist = (elbow[0]+side*.025*s,-.055*s,elbow[2]-.19*s)
+                shoulder_mat = "steel" if robot else (skin if species in ("shellback","brute") else outfit)
+                ico("Shoulder", shoulder, (.12*s,.13*s,.13*s), shoulder_mat)
+                beam("Upper_Arm", shoulder, elbow, arm_w*s*(1.25 if species=="brute" else 1), outfit if not robot else "steel")
+                ico("Elbow", elbow, (.075*s,.08*s,.075*s), "steel" if robot else skin)
+                beam("Forearm", elbow, wrist, arm_w*s*.82, outfit if not robot else "metal")
+                if robot:
+                    cube("Robot_Palm",(wrist[0],wrist[1]-.025*s,wrist[2]),(.13*s,.065*s,.105*s),"steel",.018*s)
+                    cube("Knuckle",(wrist[0],wrist[1]-.065*s,wrist[2]),(.11*s,.035*s,.07*s),trim,.01*s)
+                    for finger in (-1,0,1):
+                        cube("Robot_Finger",(wrist[0]+finger*.035*s,wrist[1]-.075*s,wrist[2]-.055*s),(.025*s,.045*s,.075*s),"steel",.006*s)
+                else:
+                    ico("Palm",(wrist[0],wrist[1]-.025*s,wrist[2]-.005*s),(.072*s,.043*s,.078*s),skin)
+                    for finger in (-1.5,-.5,.5,1.5):
+                        fx=wrist[0]+finger*.031*s
+                        length_factor=1.0 if abs(finger)<1 else .82
+                        start=(fx,wrist[1]-.045*s,wrist[2]-.025*s)
+                        end=(fx+side*.006*s,wrist[1]-.095*s,wrist[2]-.095*s*length_factor)
+                        beam("Finger",start,end,.018*s,skin)
+                    thumb_start=(wrist[0]-side*.055*s,wrist[1]-.02*s,wrist[2]-.005*s)
+                    thumb_end=(wrist[0]-side*.105*s,wrist[1]-.065*s,wrist[2]-.045*s)
+                    beam("Thumb",thumb_start,thumb_end,.022*s,skin)
+                    if species in ("mantis","shellback","brute"):
+                        beam("Hand_Claw",(wrist[0],wrist[1]-.09*s,wrist[2]-.09*s),(wrist[0]+side*.025*s,wrist[1]-.15*s,wrist[2]-.15*s),.018*s,claw_mat)
+            if species in ("stocky","brute"):
+                ico("Shoulder_Pad", (side*(body_w*.50)*s,-.01*s,shoulder_z*s),
+                    (.17*s,.20*s,.17*s), "steel" if species=="stocky" else outfit)
+    
+    
     # Head and face: all species have a different outline and/or eye arrangement.
-    if robot:
+    if using_base_mesh:
+        # Preserve the base mesh head; add subtle face features at the shared humanoid scale.
+        if human:
+            ico("Hair", (0,.035*s,(head_z+.12)*s), (.23*s,.21*s,.12*s), random.choice(["ink","rust","cream"]))
+            for side in (-1,1):
+                ico("Ear", (side*.205*s,-.005*s,(head_z-.015)*s), (.045*s,.055*s,.07*s), skin)
+            ico("Nose", (0,-.218*s,(head_z-.015)*s), (.035*s,.035*s,.055*s), skin)
+            for side in (-1,1):
+                ico("Eye", (side*.07*s,-.205*s,(head_z+.015)*s), (.028*s,.025*s,.032*s), eye_mat)
+        if species in ("wide_cranium", "brute"):
+            for side in (-1,1):
+                ico("Brow_Ridge", (side*.11*s,-.19*s,(head_z+.05)*s), (.10*s,.045*s,.045*s), skin)
+        if species == "brute":
+            for side in (-1,1):
+                beam("Tusks", (side*.12*s,-.18*s,(head_z-.10)*s), (side*.14*s,-.22*s,(head_z-.22)*s), .035*s, claw_mat)
+    elif robot:
         cube("Robot_Head", (0,-.015*s,head_z*s), (head_w*s,.36*s,head_h*s), "steel", .055*s)
         if species == "service_droid":
             cube("Droid_Faceplate", (0,-.215*s,head_z*s), (.23*s,.035*s,.26*s), "ink", .02*s)
