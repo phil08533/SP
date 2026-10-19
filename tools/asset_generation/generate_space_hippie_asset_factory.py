@@ -10,7 +10,7 @@ Run from repository root:
 Each run writes separate GLBs under assets/3d/generated/<category>/.
 Seeds make a batch reproducible. Different seeds generate different batches.
 These are stylized low-poly first-pass models; inspect and curate before production.
-NPCs are static pose models (not rigged or animated yet).
+NPCs export as segmented mesh parts with a simple humanoid-compatible armature for later code-driven animation. Robot hard-surface forms remain angular; organic species use sculptural low-poly volumes.
 """
 import bpy, math, os, random, argparse
 from mathutils import Vector
@@ -76,8 +76,99 @@ def ico(name, loc, scale, material):
     o=bpy.context.object; o.name=name; o.scale=scale; o.data.materials.append(mat(material)); return o
 
 def beam(name, a, b, radius, material):
-    vec=Vector(b)-Vector(a); o=cyl(name,(Vector(a)+Vector(b))*0.5,radius,vec.length,material,6)
-    o.rotation_mode="QUATERNION"; o.rotation_quaternion=vec.to_track_quat("Z","Y"); return o
+    """Tapered low-poly limb/connector, with a subtly smaller far end."""
+    vec=Vector(b)-Vector(a)
+    o=cyl(name,(Vector(a)+Vector(b))*0.5,radius,vec.length,material,7,
+          radius2=radius*.72)
+    o.rotation_mode="QUATERNION"; o.rotation_quaternion=vec.to_track_quat("Z","Y")
+    return o
+
+def organic_body(name, loc, scale, material):
+    """Rounded faceted volume for flesh, cloth, and creature anatomy."""
+    o=ico(name,loc,scale,material)
+    # A couple of subdivisions keep the silhouette smooth-ish but still low-poly.
+    return o
+
+def rig_npc(mesh_objects, name):
+    """Create a compact rigid-weighted skeleton. Each generated part follows one bone,
+    which is ideal for stylized segmented characters and straightforward code animation."""
+    if not mesh_objects:
+        return None
+    # Infer scale and proportions from the generated character bounds.
+    min_z = min(o.bound_box[0][2] + o.location.z for o in mesh_objects)
+    max_z = max(o.bound_box[6][2] + o.location.z for o in mesh_objects)
+    height = max(1.0, max_z - min_z)
+    min_x = min(o.location.x for o in mesh_objects)
+    max_x = max(o.location.x for o in mesh_objects)
+    half_width = max(.22, (max_x-min_x)*.5)
+    z = lambda n: min_z + height*n
+    arm_x = max(.22, half_width*.82)
+    hand_x = max(.30, half_width*1.12)
+    bones = [
+        ("root", (0,0,z(0.04)), (0,0,z(.20)), None),
+        ("pelvis", (0,0,z(.38)), (0,0,z(.55)), "root"),
+        ("spine", (0,0,z(.50)), (0,0,z(.68)), "pelvis"),
+        ("chest", (0,0,z(.63)), (0,0,z(.79)), "spine"),
+        ("neck", (0,0,z(.76)), (0,0,z(.87)), "chest"),
+        ("head", (0,0,z(.83)), (0,0,z(.99)), "neck"),
+    ]
+    for side, suffix in ((-1,"L"),(1,"R")):
+        sx = lambda n: side*half_width*n
+        bones.extend([
+            ("upper_arm."+suffix, (sx(.48),0,z(.76)), (sx(.77),0,z(.59)), "chest"),
+            ("forearm."+suffix, (sx(.77),0,z(.59)), (sx(1.0),0,z(.51)), "upper_arm."+suffix),
+            ("hand."+suffix, (sx(1.0),0,z(.51)), (sx(1.10),0,z(.48)), "forearm."+suffix),
+            ("thigh."+suffix, (sx(.30),0,z(.43)), (sx(.32),0,z(.27)), "pelvis"),
+            ("shin."+suffix, (sx(.32),0,z(.27)), (sx(.32),0,z(.10)), "thigh."+suffix),
+            ("foot."+suffix, (sx(.32),0,z(.10)), (sx(.32),-.13*height,z(.06)), "shin."+suffix),
+        ])
+    bpy.ops.object.select_all(action="DESELECT")
+    arm_data = bpy.data.armatures.new(name+"_Rig")
+    arm = bpy.data.objects.new(name+"_Rig", arm_data)
+    bpy.context.collection.objects.link(arm)
+    bpy.context.view_layer.objects.active = arm
+    arm.select_set(True)
+    bpy.ops.object.mode_set(mode="EDIT")
+    created = {}
+    for bone_name, head, tail, parent_name in bones:
+        b=arm_data.edit_bones.new(bone_name)
+        b.head=head; b.tail=tail
+        if parent_name: b.parent=created[parent_name]
+        created[bone_name]=b
+    bpy.ops.object.mode_set(mode="OBJECT")
+    # Map generated pieces to body regions. L/R follows each piece's x position.
+    for obj in mesh_objects:
+        low=obj.name.lower()
+        x=obj.matrix_world.translation.x
+        side = "L" if x < 0 else "R"
+        if any(k in low for k in ("head","eye","horn","fin","antenna","beak","jaw","crown","spore","feeler","visor","face","ear","tusk","stalk")):
+            bone="head"
+        elif any(k in low for k in ("neck","collar","throat")):
+            bone="neck"
+        elif any(k in low for k in ("toe","foot","boot","claw","metal_foot","bird_foot")):
+            bone="foot."+side
+        elif any(k in low for k in ("shin","lower_leg","long_shin","bird_shin","stumpy_leg","tendon")):
+            bone="shin."+side
+        elif any(k in low for k in ("thigh","power_thigh","feathered_thigh","upper_leg","leg")):
+            bone="thigh."+side
+        elif any(k in low for k in ("hand","finger","knuckle","hooked")):
+            bone="hand."+side
+        elif any(k in low for k in ("forearm","blade_forearm","wing_forearm")):
+            bone="forearm."+side
+        elif any(k in low for k in ("arm","wing","scythe")):
+            bone="upper_arm."+side
+        elif any(k in low for k in ("shoulder","elbow","knee","joint","pad")):
+            bone=("upper_arm." if "shoulder" in low else "forearm.")+side
+        elif any(k in low for k in ("torso","chest","abdomen","mantle","shell","vest","garment","bib","belt","core","pack","pouch","plate","feather","ridge","mark","patch","buck")):
+            bone="chest" if obj.location.z > z(.58) else "pelvis"
+        else:
+            bone="chest" if obj.location.z > z(.58) else "pelvis"
+        group=obj.vertex_groups.new(name=bone)
+        group.add(list(range(len(obj.data.vertices))),1.0,"REPLACE")
+        mod=obj.modifiers.new("NPC Armature","ARMATURE")
+        mod.object=arm
+        obj.parent=arm
+    return arm
 
 def export(name, category):
     bpy.ops.object.select_all(action="SELECT")
@@ -86,9 +177,17 @@ def export(name, category):
     bpy.context.view_layer.objects.active=selected[0]
     bpy.ops.object.convert(target="MESH")
     selected=list(bpy.context.selected_objects)
-    if len(selected)>1: bpy.ops.object.join()
-    obj=bpy.context.object; obj.name=name
-    for poly in obj.data.polygons: poly.use_smooth=False
+    if category == "npcs":
+        rig_npc(selected, name)
+        bpy.ops.object.select_all(action="DESELECT")
+        for obj in selected:
+            obj.select_set(True)
+        arm=bpy.data.objects.get(name+"_Rig")
+        if arm: arm.select_set(True)
+    else:
+        if len(selected)>1: bpy.ops.object.join()
+        obj=bpy.context.object; obj.name=name
+        for poly in obj.data.polygons: poly.use_smooth=False
     folder=os.path.join(OUT_ROOT,category); os.makedirs(folder,exist_ok=True)
     path=os.path.join(folder,name+".glb")
     bpy.ops.export_scene.gltf(filepath=path,export_format="GLB",use_selection=True,export_apply=True)
@@ -374,7 +473,11 @@ def npc(i):
         cube("Core", (0,-.235*s,1.13*s), (.17*s,.035*s,.17*s), trim, .02*s)
         cube("Collar", (0,0,1.43*s), (body_w*.76*s,.38*s,.10*s), "steel", .025*s)
     else:
-        cube("Torso", (0,0,torso_z), torso_dims, outfit, .075*s)
+        if torso_style in ("carapace","feather"):
+            organic_body("Torso", (0,0,torso_z), (body_w*.49*s,.23*s,torso_h*.53*s), outfit)
+        else:
+            # Non-robot characters use a faceted, tapered body instead of a plain cube.
+            organic_body("Torso", (0,.015*s,torso_z), (body_w*.50*s,.245*s,torso_h*.54*s), outfit)
         if torso_style == "carapace":
             ico("Thorax_Plate", (0,-.17*s,1.18*s), (.24*s,.10*s,.30*s), skin)
             cube("Abdomen_Plate", (0,.015*s,.91*s), (.33*s,.30*s,.30*s), skin, .06*s)
