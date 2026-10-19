@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cu7jrewd5vqua"]
+
+[node name="DustyJunction" type="Node3D" unique_id=1008930931]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1761677123]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.568217, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1337534893]
