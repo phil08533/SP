@@ -33,6 +33,32 @@ PALETTE = {
 }
 EMISSIVE = {"cyan", "pink", "lime"}
 MATS = {}
+NPC_PROFILE = {}
+NPC_MATERIAL_PROFILES = {
+ "human":{"skin":["skin_a","skin_b","skin_c"],"shell":["steel"],"eye":["eye"],"claw":["ink"],"marking":["rust","cream","teal"]},
+ "crystal_head":{"skin":["alien_blue","alien_purple"],"shell":["blue","plum"],"eye":["eye","cyan"],"claw":["steel"],"marking":["cyan","pink"]},
+ "wide_cranium":{"skin":["alien_green","alien_blue"],"shell":["teal","blue"],"eye":["eye","cyan"],"claw":["ink"],"marking":["lime","cyan"]},
+ "horned":{"skin":["alien_orange","alien_purple"],"shell":["rust","plum"],"eye":["eye","pink"],"claw":["cream","ink"],"marking":["yellow","pink"]},
+ "fin_head":{"skin":["alien_blue","teal"],"shell":["blue","teal"],"eye":["eye","cyan"],"claw":["ink"],"marking":["cyan","lime"]},
+ "long_neck":{"skin":["alien_green","alien_orange"],"shell":["teal","rust"],"eye":["eye","lime"],"claw":["ink"],"marking":["lime","yellow"]},
+ "stocky":{"skin":["alien_green","alien_orange"],"shell":["rust","teal"],"eye":["eye"],"claw":["ink"],"marking":["yellow","cream"]},
+ "tall_thin":{"skin":["alien_purple","alien_blue"],"shell":["plum","blue"],"eye":["eye","pink"],"claw":["ink"],"marking":["pink","cyan"]},
+ "cyclops":{"skin":["alien_green","alien_orange"],"shell":["teal","rust"],"eye":["eye","cyan"],"claw":["ink"],"marking":["lime","pink"]},
+ "four_eyed":{"skin":["alien_blue","alien_purple"],"shell":["blue","plum"],"eye":["eye","cyan"],"claw":["ink"],"marking":["cyan","pink"]},
+ "slug_traveler":{"skin":["alien_green","alien_orange"],"shell":["teal","rust"],"eye":["eye","lime"],"claw":["ink"],"marking":["lime","yellow"]},
+ "mantis":{"skin":["alien_green","lime"],"shell":["teal","lime"],"eye":["eye","yellow"],"claw":["ink","steel"],"marking":["lime","yellow"]},
+ "robot":{"skin":["metal","steel"],"shell":["metal","steel"],"eye":["eye","cyan"],"claw":["steel"],"marking":["cyan","pink","lime"]},
+ "service_droid":{"skin":["steel","metal"],"shell":["steel","ink"],"eye":["eye","cyan"],"claw":["steel"],"marking":["cyan","yellow"]},
+ "shellback":{"skin":["alien_green","alien_orange"],"shell":["rust","teal","cream"],"eye":["eye","yellow"],"claw":["ink","cream"],"marking":["yellow","lime"]},
+ "hopper":{"skin":["alien_green","alien_orange"],"shell":["teal","rust"],"eye":["eye","cyan"],"claw":["ink"],"marking":["lime","yellow"]},
+ "sporehead":{"skin":["alien_purple","alien_green"],"shell":["plum","teal"],"eye":["eye","pink"],"claw":["ink"],"marking":["pink","lime"]},
+ "tube_neck":{"skin":["alien_blue","alien_green"],"shell":["blue","teal"],"eye":["eye","cyan"],"claw":["ink"],"marking":["cyan","lime"]},
+ "orbital":{"skin":["steel","metal"],"shell":["ink","steel"],"eye":["eye","cyan"],"claw":["steel"],"marking":["cyan","pink"]},
+ "avian":{"skin":["cream","alien_orange","alien_blue"],"shell":["rust","blue","cream"],"eye":["eye"],"claw":["ink","cream"],"marking":["yellow","cyan"]},
+ "brute":{"skin":["alien_orange","alien_green"],"shell":["rust","teal"],"eye":["eye","pink"],"claw":["ink","cream"],"marking":["yellow","pink"]},
+}
+def npc_material(role, fallback):
+    return random.choice(NPC_PROFILE.get(role, [fallback]))
 
 def mat(key):
     if key in MATS: return MATS[key]
@@ -335,13 +361,17 @@ def npc(i):
     ])
     height = random.uniform(1.55, 2.08)
     s = height / 1.8
-    outfit, trim = random.choice(PAINTS), random.choice(GLOWS)
+    profile = NPC_MATERIAL_PROFILES.get(species, NPC_MATERIAL_PROFILES["human"])
+    NPC_PROFILE.clear()
+    NPC_PROFILE.update(profile)
+    outfit, trim = random.choice(PAINTS), npc_material("marking", random.choice(GLOWS))
     human = species == "human"
     robot = species in ("robot", "service_droid")
     alien = not human and not robot
-    skin = random.choice(["skin_a", "skin_b", "skin_c"]) if human else (
-        "metal" if robot else random.choice(["alien_green", "alien_blue", "alien_purple", "alien_orange"])
-    )
+    skin = npc_material("skin", "skin_a" if human else ("metal" if robot else "alien_green"))
+    eye_mat = npc_material("eye", "eye")
+    claw_mat = npc_material("claw", "ink")
+    shell_mat = npc_material("shell", outfit)
     garment = random.choice(["jacket", "coat", "armor", "tunic", "overalls", "merchant_apron", "patched_suit"])
 
     # Proportion presets alter the entire figure, not merely its head or paint.
