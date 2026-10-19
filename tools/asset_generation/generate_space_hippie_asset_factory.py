@@ -10,7 +10,7 @@ Run from repository root:
 Each run writes separate GLBs under assets/3d/generated/<category>/.
 Seeds make a batch reproducible. Different seeds generate different batches.
 These are stylized low-poly first-pass models; inspect and curate before production.
-NPCs export as segmented mesh parts with a simple humanoid-compatible armature for later code-driven animation. Procedural anatomy primitives are selectively joined and voxel-remeshed into continuous mesh regions before rigging; hard-surface clothing, eyes, horns, and accessories remain separate to preserve crisp detail. Species profiles assign cached skin, shell, eye, claw, and marking materials.
+NPCs export as segmented mesh parts with a simple humanoid-compatible armature for later code-driven animation. Species profiles assign cached skin, shell, eye, claw, and marking materials; randomized geometry markings add variation without baking large texture maps. Robot hard-surface forms remain angular; organic species use sculptural low-poly volumes.
 """
 import bpy, math, os, random, argparse
 from mathutils import Vector
@@ -201,101 +201,104 @@ def organic_body(name, loc, scale, material):
     return o
 
 
-def fuse_shape_cluster(objects, fused_name, voxel_size=0.035):
-    """Fuse intersecting anatomy primitives into a single watertight surface.
-    Decorative parts are deliberately excluded so eyes, armor edges, and markings stay crisp."""
-    objects = [o for o in objects if o and o.name in bpy.context.view_layer.objects and o.type == "MESH"]
+def wrap_shape_group(objects, name, voxel_size=0.025):
+    """Create a continuous outer skin around overlapping generated shapes.
+    The original pieces are deleted only after the wrapped mesh is successfully made."""
+    objects = [o for o in objects if o and o.type == "MESH" and o.name in bpy.data.objects]
     if len(objects) < 2:
         return objects[0] if objects else None
-    # Only join the cluster, not the whole character: each fused region can still be
-    # assigned to an appropriate bone after remeshing.
-    for scene_obj in bpy.context.view_layer.objects:
-        if scene_obj.select_get():
-            scene_obj.select_set(False)
-    for obj in objects:
-        obj.select_set(True)
-    active = objects[0]
-    bpy.context.view_layer.objects.active = active
+    original_names = [o.name for o in objects]
     try:
+        # Explicit selection/active state is important in Blender background mode.
+        for scene_obj in bpy.context.view_layer.objects:
+            if scene_obj.select_get():
+                scene_obj.select_set(False)
+        for obj in objects:
+            obj.select_set(True)
+        bpy.context.view_layer.objects.active = objects[0]
         bpy.ops.object.join()
-        fused = bpy.context.view_layer.objects.active
-        fused.name = fused_name
-        fused.data.remesh_voxel_size = voxel_size
-        fused.data.use_remesh_fix_poles = True
-        fused.data.use_remesh_smooth_normals = True
+        wrapped = bpy.context.view_layer.objects.active
+        wrapped.name = name
+        wrapped.data.remesh_voxel_size = voxel_size
+        wrapped.data.use_remesh_fix_poles = True
+        wrapped.data.use_remesh_smooth_normals = True
         bpy.ops.object.voxel_remesh()
-        # One gentle smoothing pass softens voxel artifacts without erasing the silhouette.
-        smooth = fused.modifiers.new("Anatomy Surface Polish", "SMOOTH")
-        smooth.factor = 0.65
-        smooth.iterations = 2
-        bpy.context.view_layer.objects.active = fused
-        bpy.ops.object.modifier_apply(modifier=smooth.name)
-        for poly in fused.data.polygons:
+        for poly in wrapped.data.polygons:
             poly.use_smooth = True
-        return fused
+        smooth = wrapped.modifiers.new("Soft Outer Skin", "SMOOTH")
+        smooth.factor = 0.55
+        smooth.iterations = 2
+        bpy.context.view_layer.objects.active = wrapped
+        bpy.ops.object.modifier_apply(modifier=smooth.name)
+        return wrapped
     except Exception as exc:
-        print("Shape fusion skipped for", fused_name, ":", repr(exc))
-        return bpy.data.objects.get(fused_name) or active
+        print("Wrap failed; keeping original shapes for", name, repr(exc))
+        # If join succeeded but remeshing failed, the joined source is still visible.
+        existing = bpy.data.objects.get(name)
+        if existing:
+            existing.name = original_names[0] if original_names else name
+            return existing
+        return next((bpy.data.objects.get(n) for n in original_names if bpy.data.objects.get(n)), None)
 
 
-def fuse_npc_anatomy(mesh_objects):
-    """Turn the most obvious overlapping anatomy shapes into fused mesh regions.
-    Keep armor, clothes, eyes, horns, hands' small details, and accessories separate."""
-    remaining = list(mesh_objects)
+def wrap_npc_body(mesh_objects):
+    """Wrap body shapes into connected anatomical shells, retaining heads and small details.
+    Every source object is accounted for: it is either in a successful wrapped group or preserved."""
+    detail_tokens = (
+        "head", "eye", "horn", "fin", "antenna", "beak", "jaw", "crown", "spore",
+        "feeler", "visor", "ear", "tusk", "stalk", "marking", "bioluminescent",
+        "light", "buckle", "patch", "ridge", "feather", "toe", "claw", "finger",
+        "hair", "nose", "shell_spike", "status", "port", "hinge", "sole"
+    )
+    groups = {"torso": [], "upper_arm_L": [], "upper_arm_R": [],
+              "forearm_L": [], "forearm_R": [], "thigh_L": [], "thigh_R": [],
+              "shin_L": [], "shin_R": [], "foot_L": [], "foot_R": []}
+    keep = []
+    for obj in list(mesh_objects):
+        low = obj.name.lower()
+        if any(token in low for token in detail_tokens):
+            keep.append(obj)
+            continue
+        x = obj.matrix_world.translation.x
+        side = "L" if x < 0 else "R"
+        group = None
+        if any(k in low for k in ("head", "face", "neck", "antenna")):
+            keep.append(obj)
+        elif any(k in low for k in ("forearm", "blade_forearm", "wing_forearm", "elbow")):
+            group = "forearm_" + side
+        elif any(k in low for k in ("upper_arm", "wing_upper", "shoulder_joint", "shoulder")):
+            group = "upper_arm_" + side
+        elif any(k in low for k in ("thigh", "power_thigh", "feathered_thigh", "stumpy_leg", "knee_joint", "spring_knee")):
+            group = "thigh_" + side
+        elif any(k in low for k in ("shin", "long_shin", "bird_shin", "tendon", "lower_leg")):
+            group = "shin_" + side
+        elif any(k in low for k in ("foot", "heel", "instep", "forefoot", "boot", "metal_foot")):
+            group = "foot_" + side
+        elif any(k in low for k in ("torso", "chest", "abdomen", "pelvis", "mantle", "barrel", "garment",
+                                    "vest", "plate", "bib", "apron", "core", "collar", "shell", "thorax",
+                                    "tapered", "pouch", "neck_gland", "body")):
+            group = "torso"
+        else:
+            # Unknown geometry is never discarded; keep it visible rather than risk losing details.
+            keep.append(obj)
+        if group:
+            groups[group].append(obj)
 
-    def pick(predicate):
-        found = [o for o in remaining if o.type == "MESH" and predicate(o.name.lower())]
-        for obj in found:
-            if obj in remaining:
-                remaining.remove(obj)
-        return found
-
-    # Organic torso volumes become one continuous chest/abdomen/pelvis surface.
-    torso = pick(lambda n: n in ("torso", "chest_mass", "abdomen_mass", "pelvis_mass",
-                                  "soft_mantle_body", "barrel_torso", "tapered_abdomen"))
-    if len(torso) > 1:
-        fused = fuse_shape_cluster(torso, "Fused_Torso", 0.035)
-        if fused: remaining.append(fused)
-
-    # Fuse each arm's upper segment and joint separately from its forearm.
-    for side, suffix in ((-1, "L"), (1, "R")):
-        def on_side(o):
-            return (o.matrix_world.translation.x < 0) == (side < 0)
-        picked_upper = pick(lambda n: any(k in n for k in ("upper_arm", "wing_upper", "shoulder", "elbow_joint"))
-                     and not any(k in n for k in ("pad", "plate")))
-        upper = [o for o in picked_upper if on_side(o)]
-        remaining.extend(o for o in picked_upper if not on_side(o))
-        if len(upper) > 1:
-            fused = fuse_shape_cluster(upper, "Fused_UpperArm_" + suffix, 0.025)
-            if fused: remaining.append(fused)
-
-        picked_fore = pick(lambda n: any(k in n for k in ("forearm", "wing_forearm", "elbow_joint")))
-        fore = [o for o in picked_fore if on_side(o)]
-        remaining.extend(o for o in picked_fore if not on_side(o))
-        if len(fore) > 1:
-            fused = fuse_shape_cluster(fore, "Fused_Forearm_" + suffix, 0.022)
-            if fused: remaining.append(fused)
-
-        picked_thigh = pick(lambda n: any(k in n for k in ("thigh", "power_thigh", "feathered_thigh", "stumpy_leg", "knee_joint", "spring_knee")))
-        thigh = [o for o in picked_thigh if on_side(o)]
-        remaining.extend(o for o in picked_thigh if not on_side(o))
-        if len(thigh) > 1:
-            fused = fuse_shape_cluster(thigh, "Fused_Thigh_" + suffix, 0.025)
-            if fused: remaining.append(fused)
-
-        picked_shin = pick(lambda n: any(k in n for k in ("shin", "long_shin", "bird_shin", "tendon")))
-        shin = [o for o in picked_shin if on_side(o)]
-        remaining.extend(o for o in picked_shin if not on_side(o))
-        if len(shin) > 1:
-            fused = fuse_shape_cluster(shin, "Fused_Shin_" + suffix, 0.022)
-            if fused: remaining.append(fused)
-
-    # Main head and jaw form a unified organic silhouette; facial details stay separate.
-    head = pick(lambda n: n in ("head", "jaw", "wide_head", "bird_head", "slug_head", "face"))
-    if len(head) > 1:
-        fused = fuse_shape_cluster(head, "Fused_Head", 0.022)
-        if fused: remaining.append(fused)
-    return remaining
+    for group_name, objects in groups.items():
+        if len(objects) < 2:
+            keep.extend(objects)
+            continue
+        wrapped = wrap_shape_group(objects, "Wrapped_" + group_name, 0.022 if "arm" in group_name or "shin" in group_name else 0.03)
+        if wrapped:
+            keep.append(wrapped)
+        else:
+            keep.extend(o for o in objects if o.name in bpy.data.objects)
+    # De-duplicate while retaining order.
+    result, seen = [], set()
+    for obj in keep:
+        if obj and obj.name in bpy.data.objects and obj.name not in seen:
+            result.append(obj); seen.add(obj.name)
+    return result
 
 def rig_npc(mesh_objects, name):
     """Create a compact rigid-weighted skeleton. Each generated part follows one bone,
@@ -390,7 +393,7 @@ def export(name, category):
     bpy.ops.object.convert(target="MESH")
     selected=list(bpy.context.selected_objects)
     if category == "npcs":
-        selected = fuse_npc_anatomy(selected)
+        selected = wrap_npc_body(selected)
         rig_npc(selected, name)
         bpy.ops.object.select_all(action="DESELECT")
         for obj in selected:
