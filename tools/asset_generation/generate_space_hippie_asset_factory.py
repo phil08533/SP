@@ -209,7 +209,9 @@ def fuse_shape_cluster(objects, fused_name, voxel_size=0.035):
         return objects[0] if objects else None
     # Only join the cluster, not the whole character: each fused region can still be
     # assigned to an appropriate bone after remeshing.
-    bpy.ops.object.select_all(action="DESELECT")
+    for scene_obj in bpy.context.view_layer.objects:
+        if scene_obj.select_get():
+            scene_obj.select_set(False)
     for obj in objects:
         obj.select_set(True)
     active = objects[0]
@@ -259,36 +261,31 @@ def fuse_npc_anatomy(mesh_objects):
     for side, suffix in ((-1, "L"), (1, "R")):
         def on_side(o):
             return (o.matrix_world.translation.x < 0) == (side < 0)
-        upper = pick(lambda n: any(k in n for k in ("upper_arm", "wing_upper", "shoulder", "elbow_joint"))
+        picked_upper = pick(lambda n: any(k in n for k in ("upper_arm", "wing_upper", "shoulder", "elbow_joint"))
                      and not any(k in n for k in ("pad", "plate")))
-        upper = [o for o in upper if on_side(o)]
-        # Return accidentally picked opposite-side objects to the pool for their pass.
-        for obj in list(upper):
-            if obj in remaining: remaining.remove(obj)
+        upper = [o for o in picked_upper if on_side(o)]
+        remaining.extend(o for o in picked_upper if not on_side(o))
         if len(upper) > 1:
             fused = fuse_shape_cluster(upper, "Fused_UpperArm_" + suffix, 0.025)
             if fused: remaining.append(fused)
 
-        fore = pick(lambda n: any(k in n for k in ("forearm", "wing_forearm", "elbow_joint")))
-        fore = [o for o in fore if on_side(o)]
-        for obj in list(fore):
-            if obj in remaining: remaining.remove(obj)
+        picked_fore = pick(lambda n: any(k in n for k in ("forearm", "wing_forearm", "elbow_joint")))
+        fore = [o for o in picked_fore if on_side(o)]
+        remaining.extend(o for o in picked_fore if not on_side(o))
         if len(fore) > 1:
             fused = fuse_shape_cluster(fore, "Fused_Forearm_" + suffix, 0.022)
             if fused: remaining.append(fused)
 
-        thigh = pick(lambda n: any(k in n for k in ("thigh", "power_thigh", "feathered_thigh", "stumpy_leg", "knee_joint", "spring_knee")))
-        thigh = [o for o in thigh if on_side(o)]
-        for obj in list(thigh):
-            if obj in remaining: remaining.remove(obj)
+        picked_thigh = pick(lambda n: any(k in n for k in ("thigh", "power_thigh", "feathered_thigh", "stumpy_leg", "knee_joint", "spring_knee")))
+        thigh = [o for o in picked_thigh if on_side(o)]
+        remaining.extend(o for o in picked_thigh if not on_side(o))
         if len(thigh) > 1:
             fused = fuse_shape_cluster(thigh, "Fused_Thigh_" + suffix, 0.025)
             if fused: remaining.append(fused)
 
-        shin = pick(lambda n: any(k in n for k in ("shin", "long_shin", "bird_shin", "tendon")))
-        shin = [o for o in shin if on_side(o)]
-        for obj in list(shin):
-            if obj in remaining: remaining.remove(obj)
+        picked_shin = pick(lambda n: any(k in n for k in ("shin", "long_shin", "bird_shin", "tendon")))
+        shin = [o for o in picked_shin if on_side(o)]
+        remaining.extend(o for o in picked_shin if not on_side(o))
         if len(shin) > 1:
             fused = fuse_shape_cluster(shin, "Fused_Shin_" + suffix, 0.022)
             if fused: remaining.append(fused)
