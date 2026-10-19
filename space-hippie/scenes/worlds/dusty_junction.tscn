@@ -1,8 +1,452 @@
-[gd_scene format=3 uid="uid://cu7jrewd5vqua"]
+[gd_scene format=3]
 
-[node name="DustyJunction" type="Node3D" unique_id=1008930931]
+[sub_resource type="ProceduralSkyMaterial" id="SkyMaterial"]
+sky_top_color = Color(0.075, 0.105, 0.19, 1)
+sky_horizon_color = Color(0.72, 0.43, 0.25, 1)
+ground_bottom_color = Color(0.13, 0.09, 0.075, 1)
+ground_horizon_color = Color(0.48, 0.28, 0.18, 1)
+sun_angle_max = 18.0
+sun_curve = 0.12
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1761677123]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.568217, 0)
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("SkyMaterial")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1337534893]
+[sub_resource type="Environment" id="Environment"]
+background_mode = 2
+sky = SubResource("Sky")
+tonemap_mode = 2
+tonemap_exposure = 1.15
+tonemap_white = 1.2
+ambient_light_source = 3
+ambient_light_color = Color(0.62, 0.52, 0.43, 1)
+ambient_light_energy = 0.65
+reflected_light_source = 2
+fog_enabled = true
+fog_light_color = Color(0.68, 0.43, 0.29, 1)
+fog_light_energy = 0.8
+fog_density = 0.004
+fog_sky_affect = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Sand"]
+albedo_color = Color(0.49, 0.31, 0.19, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Road"]
+albedo_color = Color(0.12, 0.115, 0.105, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="RoadStripe"]
+albedo_color = Color(0.88, 0.65, 0.32, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="MotelPaint"]
+albedo_color = Color(0.55, 0.31, 0.22, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="GaragePaint"]
+albedo_color = Color(0.24, 0.31, 0.32, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="DinerPaint"]
+albedo_color = Color(0.66, 0.43, 0.27, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="DarkMetal"]
+albedo_color = Color(0.105, 0.12, 0.13, 1)
+metallic = 0.45
+roughness = 0.55
+
+[sub_resource type="StandardMaterial3D" id="RustMetal"]
+albedo_color = Color(0.48, 0.20, 0.105, 1)
+metallic = 0.2
+roughness = 0.72
+
+[sub_resource type="StandardMaterial3D" id="WarmGlow"]
+albedo_color = Color(1.0, 0.48, 0.16, 1)
+emission_enabled = true
+emission = Color(1.0, 0.19, 0.035, 1)
+emission_energy_multiplier = 2.2
+
+[sub_resource type="StandardMaterial3D" id="PortalGlow"]
+albedo_color = Color(0.14, 0.8, 0.73, 1)
+emission_enabled = true
+emission = Color(0.035, 0.8, 0.66, 1)
+emission_energy_multiplier = 3.0
+metallic = 0.15
+roughness = 0.25
+
+[sub_resource type="StandardMaterial3D" id="Window"]
+albedo_color = Color(1.0, 0.57, 0.26, 1)
+emission_enabled = true
+emission = Color(1.0, 0.28, 0.08, 1)
+emission_energy_multiplier = 0.8
+
+[sub_resource type="StandardMaterial3D" id="Rock"]
+albedo_color = Color(0.28, 0.20, 0.16, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="GroundMesh"]
+size = Vector3(120, 0.4, 120)
+
+[sub_resource type="BoxMesh" id="RoadMesh"]
+size = Vector3(8, 0.12, 100)
+
+[sub_resource type="BoxMesh" id="StripeMesh"]
+size = Vector3(0.16, 0.025, 3.2)
+
+[sub_resource type="BoxMesh" id="BuildingMotelMesh"]
+size = Vector3(12, 4.5, 7)
+
+[sub_resource type="BoxMesh" id="BuildingGarageMesh"]
+size = Vector3(13, 5, 9)
+
+[sub_resource type="BoxMesh" id="BuildingDinerMesh"]
+size = Vector3(10, 3.7, 7)
+
+[sub_resource type="BoxMesh" id="SmallShopMesh"]
+size = Vector3(7, 3.5, 6)
+
+[sub_resource type="BoxMesh" id="RoofMesh"]
+size = Vector3(12.8, 0.35, 7.7)
+
+[sub_resource type="BoxMesh" id="GarageRoofMesh"]
+size = Vector3(13.8, 0.35, 9.7)
+
+[sub_resource type="BoxMesh" id="WindowMesh"]
+size = Vector3(1.25, 1.0, 0.12)
+
+[sub_resource type="BoxMesh" id="DoorMesh"]
+size = Vector3(1.3, 2.5, 0.16)
+
+[sub_resource type="BoxMesh" id="PortalPostMesh"]
+size = Vector3(0.7, 6.2, 0.8)
+
+[sub_resource type="BoxMesh" id="PortalTopMesh"]
+size = Vector3(5.4, 0.7, 0.8)
+
+[sub_resource type="BoxMesh" id="PortalSurfaceMesh"]
+size = Vector3(3.8, 4.8, 0.12)
+
+[sub_resource type="BoxMesh" id="SignBoardMesh"]
+size = Vector3(4.8, 1.25, 0.28)
+
+[sub_resource type="BoxMesh" id="SignPostMesh"]
+size = Vector3(0.22, 3.2, 0.22)
+
+[sub_resource type="BoxMesh" id="CrateMesh"]
+size = Vector3(1.2, 1.1, 1.2)
+
+[sub_resource type="BoxMesh" id="PumpBodyMesh"]
+size = Vector3(1.1, 1.7, 0.8)
+
+[sub_resource type="BoxMesh" id="PumpTopMesh"]
+size = Vector3(1.25, 0.25, 0.9)
+
+[sub_resource type="CylinderMesh" id="RockMesh"]
+top_radius = 1.1
+bottom_radius = 1.45
+height = 2.2
+radial_segments = 6
+rings = 1
+
+[node name="DustyJunction" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-38, -28, 0)
+light_color = Color(1, 0.77, 0.58, 1)
+light_energy = 1.25
+shadow_enabled = true
+directional_shadow_max_distance = 100.0
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(0, 27, 42)
+rotation_degrees = Vector3(-28, 0, 0)
+current = true
+fov = 65.0
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.25, 0)
+mesh = SubResource("GroundMesh")
+material_override = SubResource("Sand")
+
+[node name="MainDragRoad" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.03, 0)
+mesh = SubResource("RoadMesh")
+material_override = SubResource("Road")
+
+[node name="RoadCenterStripe01" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.105, 30)
+mesh = SubResource("StripeMesh")
+material_override = SubResource("RoadStripe")
+
+[node name="RoadCenterStripe02" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.105, 22)
+mesh = SubResource("StripeMesh")
+material_override = SubResource("RoadStripe")
+
+[node name="RoadCenterStripe03" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.105, 14)
+mesh = SubResource("StripeMesh")
+material_override = SubResource("RoadStripe")
+
+[node name="RoadCenterStripe04" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.105, 6)
+mesh = SubResource("StripeMesh")
+material_override = SubResource("RoadStripe")
+
+[node name="RoadCenterStripe05" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.105, -2)
+mesh = SubResource("StripeMesh")
+material_override = SubResource("RoadStripe")
+
+[node name="RoadCenterStripe06" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.105, -10)
+mesh = SubResource("StripeMesh")
+material_override = SubResource("RoadStripe")
+
+[node name="RoadCenterStripe07" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.105, -18)
+mesh = SubResource("StripeMesh")
+material_override = SubResource("RoadStripe")
+
+[node name="RoadCenterStripe08" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.105, -26)
+mesh = SubResource("StripeMesh")
+material_override = SubResource("RoadStripe")
+
+[node name="Motel" type="Node3D" parent="."]
+position = Vector3(-13, 0, 9)
+
+[node name="MotelBuilding" type="MeshInstance3D" parent="Motel"]
+position = Vector3(0, 2.25, 0)
+mesh = SubResource("BuildingMotelMesh")
+material_override = SubResource("MotelPaint")
+
+[node name="MotelRoof" type="MeshInstance3D" parent="Motel"]
+position = Vector3(0, 4.65, 0)
+mesh = SubResource("RoofMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="MotelDoor" type="MeshInstance3D" parent="Motel"]
+position = Vector3(0, 1.25, 3.58)
+mesh = SubResource("DoorMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="MotelWindowLeft" type="MeshInstance3D" parent="Motel"]
+position = Vector3(-3.2, 2.7, 3.58)
+mesh = SubResource("WindowMesh")
+material_override = SubResource("Window")
+
+[node name="MotelWindowRight" type="MeshInstance3D" parent="Motel"]
+position = Vector3(3.2, 2.7, 3.58)
+mesh = SubResource("WindowMesh")
+material_override = SubResource("Window")
+
+[node name="MotelSign" type="Node3D" parent="Motel"]
+position = Vector3(0, 6.0, 3.5)
+
+[node name="SignBoard" type="MeshInstance3D" parent="Motel/MotelSign"]
+mesh = SubResource("SignBoardMesh")
+material_override = SubResource("WarmGlow")
+
+[node name="SignPoleLeft" type="MeshInstance3D" parent="Motel/MotelSign"]
+position = Vector3(-1.9, -2.1, 0)
+mesh = SubResource("SignPostMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="SignPoleRight" type="MeshInstance3D" parent="Motel/MotelSign"]
+position = Vector3(1.9, -2.1, 0)
+mesh = SubResource("SignPostMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="MaraGarage" type="Node3D" parent="."]
+position = Vector3(13, 0, 7)
+
+[node name="GarageBuilding" type="MeshInstance3D" parent="MaraGarage"]
+position = Vector3(0, 2.5, 0)
+mesh = SubResource("BuildingGarageMesh")
+material_override = SubResource("GaragePaint")
+
+[node name="GarageRoof" type="MeshInstance3D" parent="MaraGarage"]
+position = Vector3(0, 5.15, 0)
+mesh = SubResource("GarageRoofMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="GarageBayLeft" type="MeshInstance3D" parent="MaraGarage"]
+position = Vector3(-3.2, 1.45, 4.58)
+mesh = SubResource("DoorMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="GarageBayRight" type="MeshInstance3D" parent="MaraGarage"]
+position = Vector3(3.2, 1.45, 4.58)
+mesh = SubResource("DoorMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="Diner" type="Node3D" parent="."]
+position = Vector3(-13, 0, -12)
+
+[node name="DinerBuilding" type="MeshInstance3D" parent="Diner"]
+position = Vector3(0, 1.85, 0)
+mesh = SubResource("BuildingDinerMesh")
+material_override = SubResource("DinerPaint")
+
+[node name="DinerRoof" type="MeshInstance3D" parent="Diner"]
+position = Vector3(0, 3.9, 0)
+mesh = SubResource("RoofMesh")
+material_override = SubResource("RustMetal")
+
+[node name="DinerWindowLeft" type="MeshInstance3D" parent="Diner"]
+position = Vector3(-2.5, 2.4, 3.58)
+mesh = SubResource("WindowMesh")
+material_override = SubResource("Window")
+
+[node name="DinerWindowRight" type="MeshInstance3D" parent="Diner"]
+position = Vector3(2.5, 2.4, 3.58)
+mesh = SubResource("WindowMesh")
+material_override = SubResource("Window")
+
+[node name="TradeCounter" type="Node3D" parent="."]
+position = Vector3(13, 0, -12)
+
+[node name="TradeShop" type="MeshInstance3D" parent="TradeCounter"]
+position = Vector3(0, 1.75, 0)
+mesh = SubResource("SmallShopMesh")
+material_override = SubResource("MotelPaint")
+
+[node name="TradeRoof" type="MeshInstance3D" parent="TradeCounter"]
+position = Vector3(0, 3.7, 0)
+mesh = SubResource("RoofMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="TradeDoor" type="MeshInstance3D" parent="TradeCounter"]
+position = Vector3(0, 1.25, 3.08)
+mesh = SubResource("DoorMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="Pumpworks" type="Node3D" parent="."]
+position = Vector3(0, 0, -31)
+
+[node name="PortalPostLeft" type="MeshInstance3D" parent="Pumpworks"]
+position = Vector3(-2.35, 3.1, 0)
+mesh = SubResource("PortalPostMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="PortalPostRight" type="MeshInstance3D" parent="Pumpworks"]
+position = Vector3(2.35, 3.1, 0)
+mesh = SubResource("PortalPostMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="PortalHeader" type="MeshInstance3D" parent="Pumpworks"]
+position = Vector3(0, 6.0, 0)
+mesh = SubResource("PortalTopMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="PortalSurface" type="MeshInstance3D" parent="Pumpworks"]
+position = Vector3(0, 3.1, -0.25)
+mesh = SubResource("PortalSurfaceMesh")
+material_override = SubResource("PortalGlow")
+
+[node name="PumpLeft" type="MeshInstance3D" parent="Pumpworks"]
+position = Vector3(-5.2, 0.85, 3.5)
+mesh = SubResource("PumpBodyMesh")
+material_override = SubResource("RustMetal")
+
+[node name="PumpLeftTop" type="MeshInstance3D" parent="Pumpworks"]
+position = Vector3(-5.2, 1.85, 3.5)
+mesh = SubResource("PumpTopMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="PumpRight" type="MeshInstance3D" parent="Pumpworks"]
+position = Vector3(5.2, 0.85, 3.5)
+mesh = SubResource("PumpBodyMesh")
+material_override = SubResource("RustMetal")
+
+[node name="PumpRightTop" type="MeshInstance3D" parent="Pumpworks"]
+position = Vector3(5.2, 1.85, 3.5)
+mesh = SubResource("PumpBodyMesh")
+material_override = SubResource("RustMetal")
+
+[node name="PortalLight" type="OmniLight3D" parent="Pumpworks"]
+position = Vector3(0, 3.0, 1.5)
+light_color = Color(0.05, 0.9, 0.7, 1)
+light_energy = 2.0
+omni_range = 12.0
+shadow_enabled = false
+
+[node name="SupplyCrates" type="Node3D" parent="."]
+position = Vector3(5, 0, -17)
+
+[node name="Crate01" type="MeshInstance3D" parent="SupplyCrates"]
+position = Vector3(0, 0.55, 0)
+mesh = SubResource("CrateMesh")
+material_override = SubResource("RustMetal")
+
+[node name="Crate02" type="MeshInstance3D" parent="SupplyCrates"]
+position = Vector3(1.0, 0.55, -0.8)
+rotation_degrees = Vector3(0, 22, 0)
+mesh = SubResource("CrateMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="Crate03" type="MeshInstance3D" parent="SupplyCrates"]
+position = Vector3(-0.9, 1.65, -0.4)
+mesh = SubResource("CrateMesh")
+material_override = SubResource("RustMetal")
+
+[node name="StreetLamp" type="Node3D" parent="."]
+position = Vector3(7, 0, 20)
+
+[node name="LampPost" type="MeshInstance3D" parent="StreetLamp"]
+position = Vector3(0, 3.0, 0)
+mesh = SubResource("SignPostMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="LampArm" type="MeshInstance3D" parent="StreetLamp"]
+position = Vector3(-0.8, 4.45, 0)
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("SignPostMesh")
+material_override = SubResource("DarkMetal")
+
+[node name="LampGlow" type="MeshInstance3D" parent="StreetLamp"]
+position = Vector3(-1.5, 4.25, 0)
+mesh = SubResource("PumpTopMesh")
+material_override = SubResource("WarmGlow")
+
+[node name="LampLight" type="OmniLight3D" parent="StreetLamp"]
+position = Vector3(-1.5, 4.0, 0)
+light_color = Color(1.0, 0.38, 0.15, 1)
+light_energy = 1.2
+omni_range = 8.0
+shadow_enabled = false
+
+[node name="DesertRocks" type="Node3D" parent="."]
+
+[node name="Rock01" type="MeshInstance3D" parent="DesertRocks"]
+position = Vector3(-25, 1.0, -25)
+rotation_degrees = Vector3(0, 20, 8)
+scale = Vector3(2.8, 1.7, 2.2)
+mesh = SubResource("RockMesh")
+material_override = SubResource("Rock")
+
+[node name="Rock02" type="MeshInstance3D" parent="DesertRocks"]
+position = Vector3(27, 1.0, -18)
+rotation_degrees = Vector3(8, 0, -10)
+scale = Vector3(3.2, 1.9, 2.5)
+mesh = SubResource("RockMesh")
+material_override = SubResource("Rock")
+
+[node name="Rock03" type="MeshInstance3D" parent="DesertRocks"]
+position = Vector3(-30, 1.0, 9)
+rotation_degrees = Vector3(4, 28, 0)
+scale = Vector3(3.5, 2.0, 2.7)
+mesh = SubResource("RockMesh")
+material_override = SubResource("Rock")
+
+[node name="Rock04" type="MeshInstance3D" parent="DesertRocks"]
+position = Vector3(31, 1.0, 24)
+rotation_degrees = Vector3(0, 15, -8)
+scale = Vector3(2.5, 1.5, 2.1)
+mesh = SubResource("RockMesh")
+material_override = SubResource("Rock")
