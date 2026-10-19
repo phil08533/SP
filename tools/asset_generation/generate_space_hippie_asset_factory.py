@@ -57,6 +57,13 @@ NPC_MATERIAL_PROFILES = {
  "avian":{"skin":["cream","alien_orange","alien_blue"],"shell":["rust","blue","cream"],"eye":["eye"],"claw":["ink","cream"],"marking":["yellow","cyan"]},
  "brute":{"skin":["alien_orange","alien_green"],"shell":["rust","teal"],"eye":["eye","pink"],"claw":["ink","cream"],"marking":["yellow","pink"]},
 }
+def configure_npc_material_profile(species):
+    """Dedicated material stage: select compatible colors once per generated NPC.
+    Shared Blender materials are cached by mat(), keeping GLBs compact."""
+    NPC_PROFILE.clear()
+    NPC_PROFILE.update(NPC_MATERIAL_PROFILES.get(species, NPC_MATERIAL_PROFILES["human"]))
+    return {role: random.choice(values) for role, values in NPC_PROFILE.items()}
+
 def npc_material(role, fallback):
     return random.choice(NPC_PROFILE.get(role, [fallback]))
 
@@ -370,10 +377,8 @@ def npc(i):
     ])
     height = random.uniform(1.55, 2.08)
     s = height / 1.8
-    profile = NPC_MATERIAL_PROFILES.get(species, NPC_MATERIAL_PROFILES["human"])
-    NPC_PROFILE.clear()
-    NPC_PROFILE.update(profile)
-    outfit, trim = random.choice(PAINTS), npc_material("marking", random.choice(GLOWS))
+    selected_materials = configure_npc_material_profile(species)
+    outfit, trim = random.choice(PAINTS), selected_materials["marking"]
     human = species == "human"
     robot = species in ("robot", "service_droid")
     alien = not human and not robot
